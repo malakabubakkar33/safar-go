@@ -2,36 +2,22 @@
  * SafarGo - Main Application Coordinator
  *
  * Lifecycle Sequence:
- * 0. Sentry Error Tracking & Device Location Initialization
+ * 0. Device Location Initialization
  * 1. Splash Screen (Muted Video Animation)
  * 2. Onboarding Experience (Bike -> Car -> Location)
  * 3. Authentication Flow (Login <-> 4-Step Signup: Info -> Real Email OTP -> Profile Photo -> Password)
  * 4. Account Created -> Application State
  */
 
-import { Sentry, mountErrorButton } from './sentry.js';
 import { locationService } from './locationService.js';
 import { initSplashScreen } from './splash.js';
 import { initOnboarding } from './onboarding.js';
 import { initAuth } from './auth.js';
-
 import { initOnboardingCoordinator } from './driverOnboarding.js';
-
-// Phase 0: Initialize Sentry Monitoring & Error Tracking
-Sentry.init({
-  dsn: "https://a28109ca331da63b2173a570b29c2112@o4512215495868416.ingest.de.sentry.io/4512215507927120",
-  tracesSampleRate: 1.0,
-  tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/, "/api"],
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-});
-
-// Mount the test ErrorButton requested to verify Sentry error tracking
-mountErrorButton();
 
 // Pre-fetch device location in background for ride matching
 locationService.getCurrentPosition().catch((err) => {
-  Sentry.logger.warn('Failed to pre-fetch location', { error: err.message });
+  console.warn('Failed to pre-fetch location:', err.message);
 });
 
 // Auto-login & Direct App Launch: Skip Splash, Onboarding & Login if already authenticated

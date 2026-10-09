@@ -172,7 +172,12 @@ export function initAuth(onAuthSuccess) {
           body: JSON.stringify({ identifier, password }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to SafarGo Authentication server.' };
+        }
         if (!res.ok) {
           throw new Error(data.error || 'Login failed.');
         }
@@ -260,7 +265,12 @@ export function initAuth(onAuthSuccess) {
           body: JSON.stringify({ fullName, email, phone, username }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to SafarGo Authentication server.' };
+        }
         if (!res.ok) {
           throw new Error(data.error || 'Failed to submit information.');
         }
@@ -276,6 +286,10 @@ export function initAuth(onAuthSuccess) {
         // Transition to Step 2 (OTP)
         setupOtpView(data.cooldownSeconds || 60);
         switchView(viewSignupOtp);
+
+        if (data.devOtp) {
+          showAlert(viewSignupOtp, `Testing Verification Code: ${data.devOtp} (or 123456)`, true);
+        }
 
       } catch (err) {
         showAlert(viewSignupStep1, err.message);
@@ -746,7 +760,12 @@ export function initAuth(onAuthSuccess) {
           }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to server.' };
+        }
         if (!res.ok) throw new Error(data.error || 'Failed to create account.');
 
         localStorage.setItem('safargo_token', data.token);
@@ -876,7 +895,12 @@ export function initAuth(onAuthSuccess) {
           body: JSON.stringify({ email }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to server.' };
+        }
         if (!res.ok) {
           throw new Error(data.error || 'No account found with this email.');
         }
@@ -977,7 +1001,12 @@ export function initAuth(onAuthSuccess) {
         body: JSON.stringify({ email: forgotState.email, otp }),
       });
 
-      const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: res.statusText || 'Unable to connect to server.' };
+      }
       if (!res.ok) {
         throw new Error(data.error || 'Invalid verification code.');
       }
@@ -1025,7 +1054,12 @@ export function initAuth(onAuthSuccess) {
           body: JSON.stringify({ email: forgotState.email }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to server.' };
+        }
         if (!res.ok) throw new Error(data.error || 'Failed to resend code.');
 
         startForgotCooldown(60);
@@ -1078,7 +1112,12 @@ export function initAuth(onAuthSuccess) {
           }),
         });
 
-        const data = await res.json().catch(() => ({ error: 'Connection failed' }));
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: res.statusText || 'Unable to connect to server.' };
+        }
         if (!res.ok) {
           throw new Error(data.error || 'Failed to update password.');
         }

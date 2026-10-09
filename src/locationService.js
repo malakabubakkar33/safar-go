@@ -3,7 +3,6 @@
  * Handles GPS positioning, IP fallback, and reverse geocoding.
  */
 
-import { Sentry } from './sentry.js';
 
 export const LOCATION_CONFIG = {
   apiKey: 'ad129807860e7b56d327bf3aa0a0e4e1',
@@ -38,9 +37,6 @@ export class LocationService {
             };
 
             this.currentLocation = coords;
-            Sentry.logger.info('Device location acquired via GPS', coords);
-            Sentry.metrics.count('location_resolved_gps', 1);
-
             resolve(coords);
           },
           async (err) => {
@@ -65,8 +61,6 @@ export class LocationService {
    */
   async getLocationByDeviceApi() {
     try {
-      Sentry.logger.info('Requesting location via Device Location API');
-      
       // Attempt resolution using the provided API key
       const endpoints = [
         `https://api.ipgeolocation.io/ipgeo?apiKey=${LOCATION_CONFIG.apiKey}`,
@@ -86,7 +80,6 @@ export class LocationService {
               source: 'device_api',
             };
             this.currentLocation = location;
-            Sentry.metrics.count('location_resolved_device_api', 1);
             return location;
           }
         } catch {

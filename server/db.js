@@ -5,14 +5,29 @@
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, 'data');
+const DEFAULT_DATA_DIR = path.join(__dirname, 'data');
+let DATA_DIR = DEFAULT_DATA_DIR;
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Check if running on Vercel or AWS Lambda (read-only filesystem except /tmp)
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+try {
+  if (isServerless) {
+    DATA_DIR = path.join(os.tmpdir(), 'safargo_data');
+  }
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  DATA_DIR = path.join(os.tmpdir(), 'safargo_data');
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
 }
 
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -21,6 +36,18 @@ const OTPS_FILE = path.join(DATA_DIR, 'otps.json');
 function readFile(file, defaultValue = []) {
   try {
     if (!fs.existsSync(file)) {
+      // Seed template from packaged data directory if available
+      const baseName = path.basename(file);
+      const defaultFilePath = path.join(DEFAULT_DATA_DIR, baseName);
+      if (fs.existsSync(defaultFilePath)) {
+        try {
+          const defaultContent = fs.readFileSync(defaultFilePath, 'utf8');
+          fs.writeFileSync(file, defaultContent, 'utf8');
+          return JSON.parse(defaultContent || JSON.stringify(defaultValue));
+        } catch {
+          // ignore seeding write error
+        }
+      }
       fs.writeFileSync(file, JSON.stringify(defaultValue, null, 2), 'utf8');
       return defaultValue;
     }
@@ -34,11 +61,20 @@ function readFile(file, defaultValue = []) {
 
 function writeFile(file, data) {
   try {
+    const dir = path.dirname(file);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     const tempFile = `${file}.tmp.${Date.now()}`;
     fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
     fs.renameSync(tempFile, file);
   } catch (err) {
-    console.error(`[DB] Error writing ${file}:`, err);
+    // Direct write fallback
+    try {
+      fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+    } catch (writeErr) {
+      console.error(`[DB] Error writing ${file}:`, writeErr);
+    }
   }
 }
 

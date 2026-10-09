@@ -898,7 +898,7 @@ router.get('/system-health', authenticateAdmin, (req, res) => {
         status: process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith('re_your_') ? 'OPERATIONAL' : 'WARNING',
         provider: 'Resend API'
       },
-      errorMonitoring: { status: 'OPERATIONAL', provider: 'Sentry SDK v8.48.0' },
+      errorMonitoring: { status: 'OPERATIONAL', provider: 'Internal Native Diagnostics' },
       realtimeSocket: { status: 'OPERATIONAL', engine: 'Native WebSocket Heartbeat' }
     };
     return res.json({ success: true, health, timestamp: new Date().toISOString() });

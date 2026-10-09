@@ -17,6 +17,7 @@ import {
   driverDocumentDB,
   driverVerificationDB,
 } from '../db.js';
+import { uploadToSupabaseStorage, BUCKETS } from '../supabase.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -232,7 +233,7 @@ const cnicUploadFields = uploadDoc.fields([
   { name: 'cnicBack', maxCount: 1 },
 ]);
 
-router.post('/upload-cnic', authenticate, cnicUploadFields, (req, res) => {
+router.post('/upload-cnic', authenticate, cnicUploadFields, async (req, res) => {
   try {
     const profile = driverProfileDB.findOrCreate(req.user.id);
     const existingDoc = driverDocumentDB.findByDriverAndType(profile.id, 'CNIC');
@@ -240,11 +241,11 @@ router.post('/upload-cnic', authenticate, cnicUploadFields, (req, res) => {
     const frontFile = req.files?.cnicFront?.[0];
     const backFile = req.files?.cnicBack?.[0];
 
-    const frontUrl = frontFile 
+    let frontUrl = frontFile 
       ? `/api/onboarding/document-file/${frontFile.filename}`
       : existingDoc?.documentImageFrontUrl;
 
-    const backUrl = backFile
+    let backUrl = backFile
       ? `/api/onboarding/document-file/${backFile.filename}`
       : existingDoc?.documentImageBackUrl;
 
@@ -253,6 +254,26 @@ router.post('/upload-cnic', authenticate, cnicUploadFields, (req, res) => {
     }
     if (!backUrl) {
       return res.status(400).json({ success: false, error: 'CNIC Back image is required.' });
+    }
+
+    // Upload to Supabase Storage in background/non-blocking
+    if (frontFile) {
+      try {
+        const buf = fs.readFileSync(frontFile.path);
+        const sbUrl = await uploadToSupabaseStorage(BUCKETS.DOCUMENTS, `cnic/${frontFile.filename}`, buf, frontFile.mimetype);
+        if (sbUrl) frontUrl = sbUrl;
+      } catch (e) {
+        console.warn('[Supabase CNIC Front]:', e.message);
+      }
+    }
+    if (backFile) {
+      try {
+        const buf = fs.readFileSync(backFile.path);
+        const sbUrl = await uploadToSupabaseStorage(BUCKETS.DOCUMENTS, `cnic/${backFile.filename}`, buf, backFile.mimetype);
+        if (sbUrl) backUrl = sbUrl;
+      } catch (e) {
+        console.warn('[Supabase CNIC Back]:', e.message);
+      }
     }
 
     const doc = driverDocumentDB.upsert(profile.id, 'CNIC', {
@@ -277,7 +298,7 @@ router.post('/upload-cnic', authenticate, cnicUploadFields, (req, res) => {
 // -------------------------------------------------------------
 // 6. DRIVER LICENSE (LICENSE NUMBER & IMAGE)
 // -------------------------------------------------------------
-router.post('/driver-license', authenticate, uploadDoc.single('licenseImage'), (req, res) => {
+router.post('/driver-license', authenticate, uploadDoc.single('licenseImage'), async (req, res) => {
   try {
     const profile = driverProfileDB.findOrCreate(req.user.id);
     const { licenseNumber } = req.body;
@@ -288,12 +309,23 @@ router.post('/driver-license', authenticate, uploadDoc.single('licenseImage'), (
     }
 
     const imageFile = req.file;
-    const imageUrl = imageFile
+    let imageUrl = imageFile
       ? `/api/onboarding/document-file/${imageFile.filename}`
       : existingDoc?.documentImageFrontUrl;
 
     if (!imageUrl) {
       return res.status(400).json({ success: false, error: 'License photo upload is required.' });
+    }
+
+    // Upload to Supabase Storage
+    if (imageFile) {
+      try {
+        const buf = fs.readFileSync(imageFile.path);
+        const sbUrl = await uploadToSupabaseStorage(BUCKETS.DOCUMENTS, `licenses/${imageFile.filename}`, buf, imageFile.mimetype);
+        if (sbUrl) imageUrl = sbUrl;
+      } catch (e) {
+        console.warn('[Supabase License Upload]:', e.message);
+      }
     }
 
     const doc = driverDocumentDB.upsert(profile.id, 'LICENSE', {
@@ -358,14 +390,23 @@ router.post('/driver-vehicle-details', authenticate, uploadDoc.single('numberPla
 // -------------------------------------------------------------
 // 8. DRIVER PROFILE PHOTO
 // -------------------------------------------------------------
-router.post('/driver-profile-photo', authenticate, uploadAvatar.single('profilePhoto'), (req, res) => {
+router.post('/driver-profile-photo', authenticate, uploadAvatar.single('profilePhoto'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Please choose or capture a profile photo.' });
     }
 
     const profile = driverProfileDB.findOrCreate(req.user.id);
-    const photoUrl = `/uploads/avatars/${req.file.filename}`;
+    let photoUrl = `/uploads/avatars/${req.file.filename}`;
+
+    // Upload to Supabase Storage
+    try {
+      const buf = fs.readFileSync(req.file.path);
+      const sbUrl = await uploadToSupabaseStorage(BUCKETS.AVATARS, `driver-avatars/${req.file.filename}`, buf, req.file.mimetype);
+      if (sbUrl) photoUrl = sbUrl;
+    } catch (e) {
+      console.warn('[Supabase Driver Photo Upload]:', e.message);
+    }
 
     const updated = driverProfileDB.update(profile.id, {
       profileImageUrl: photoUrl,
