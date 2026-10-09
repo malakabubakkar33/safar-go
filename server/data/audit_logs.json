@@ -1,0 +1,182 @@
+[
+  {
+    "id": "aud_1791484687222_mn5xn",
+    "adminName": "SafarGo Chief Operations",
+    "action": "UPDATE_VEHICLE",
+    "target": "Vehicle ",
+    "details": "Status set to undefined",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T18:38:07.222Z"
+  },
+  {
+    "id": "aud_1791484413452_k593o",
+    "adminName": "SafarGo Chief Operations",
+    "action": "UPDATE_COMPLAINT",
+    "target": "Complaint CMP-400",
+    "details": "Status: RESOLVED, Notes: None",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T18:33:33.452Z"
+  },
+  {
+    "id": "aud_1791482668886_egdgr",
+    "adminName": "SafarGo Chief Operations",
+    "action": "UPDATE_VEHICLE",
+    "target": "Vehicle ",
+    "details": "Status set to undefined",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T18:04:28.886Z"
+  },
+  {
+    "id": "aud_1791480701904_xvt78",
+    "adminName": "SafarGo Chief Operations",
+    "action": "REVIEW_DRIVER_APPROVE",
+    "target": "Driver Application: Zainab Fatima",
+    "details": "Status set to APPROVED. Reason/Notes: Approved",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T17:31:41.904Z"
+  },
+  {
+    "id": "aud_1791477574697_vk1xg",
+    "adminName": "SafarGo Chief Operations",
+    "action": "CHANGE_PLATFORM_SETTINGS",
+    "target": "Platform Settings",
+    "details": "Changed settings: driverCommissionPercent, minFare",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:39:34.697Z"
+  },
+  {
+    "id": "aud_1791477574615_awqxv",
+    "adminName": "SafarGo Chief Operations",
+    "action": "REVIEW_DRIVER_undefined",
+    "target": "Driver Application: Malik Abubakkar",
+    "details": "Status set to undefined. Reason/Notes: Approved",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:39:34.615Z"
+  },
+  {
+    "id": "aud_1791477574509_ue6vk",
+    "adminName": "SafarGo Chief Operations",
+    "action": "VIEW_DOCUMENT",
+    "target": "undefined",
+    "details": "Sensitive identity document opened by administrator",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:39:34.509Z"
+  },
+  {
+    "id": "aud_1791477574365_fsb8w",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:39:34.365Z"
+  },
+  {
+    "id": "aud_1791477264154_xlr06",
+    "adminName": "SafarGo Chief Operations",
+    "action": "CHANGE_PLATFORM_SETTINGS",
+    "target": "Platform Settings",
+    "details": "Changed settings: driverCommissionPercent, minFare",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:34:24.154Z"
+  },
+  {
+    "id": "aud_1791477264074_oe7tl",
+    "adminName": "SafarGo Chief Operations",
+    "action": "REVIEW_DRIVER_undefined",
+    "target": "Driver Application: Malik Abubakkar",
+    "details": "Status set to undefined. Reason/Notes: Approved",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:34:24.074Z"
+  },
+  {
+    "id": "aud_1791477263903_91gha",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:34:23.903Z"
+  },
+  {
+    "id": "aud_1791477092020_qv6ae",
+    "adminName": "SafarGo Chief Operations",
+    "action": "CHANGE_PLATFORM_SETTINGS",
+    "target": "Platform Settings",
+    "details": "Changed settings: driverCommissionPercent, minFare",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:31:32.020Z"
+  },
+  {
+    "id": "aud_1791477091978_v2x1r",
+    "adminName": "SafarGo Chief Operations",
+    "action": "REVIEW_DRIVER_undefined",
+    "target": "Driver Application: Malik Abubakkar",
+    "details": "Status set to undefined. Reason/Notes: Approved",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:31:31.978Z"
+  },
+  {
+    "id": "aud_1791477091875_6afov",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:31:31.875Z"
+  },
+  {
+    "id": "aud_1791476320691_zar9h",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:18:40.691Z"
+  },
+  {
+    "id": "aud_1791476277727_q8nkd",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:17:57.727Z"
+  },
+  {
+    "id": "aud_1791476134382_oh94z",
+    "adminName": "SafarGo Chief Operations",
+    "action": "ADMIN_LOGIN",
+    "target": "Admin Console",
+    "details": "Successful administrator login",
+    "ipAddress": "::1",
+    "createdAt": "2026-10-08T16:15:34.382Z"
+  },
+  {
+    "id": "aud_001",
+    "adminName": "SafarGo Chief Operations",
+    "action": "APPROVE_DRIVER",
+    "target": "Driver: Malik Abubakkar (LEA-2024)",
+    "details": "CNIC, License & Bike Number Plate verified and approved.",
+    "ipAddress": "192.168.1.1",
+    "createdAt": "2026-10-05T12:00:00.000Z"
+  },
+  {
+    "id": "aud_002",
+    "adminName": "SafarGo Chief Operations",
+    "action": "APPROVE_DRIVER",
+    "target": "Driver: Bilal Khan (ICT-4890)",
+    "details": "Car details and driving documents verified.",
+    "ipAddress": "192.168.1.1",
+    "createdAt": "2026-09-25T15:00:00.000Z"
+  },
+  {
+    "id": "aud_003",
+    "adminName": "SafarGo Chief Operations",
+    "action": "SUSPEND_USER",
+    "target": "User: Usman Riaz",
+    "details": "Multiple cancellation policy violation flagged.",
+    "ipAddress": "192.168.1.1",
+    "createdAt": "2026-09-28T18:00:00.000Z"
+  }
+]

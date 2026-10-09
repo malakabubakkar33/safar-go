@@ -1,0 +1,33 @@
+[
+  {
+    "id": "CMP-401",
+    "ticketNumber": "TKT-2026-0401",
+    "userId": "usr_rider_002",
+    "userName": "Sara Ahmed",
+    "userRole": "CUSTOMER",
+    "rideId": "RIDE-1047",
+    "category": "BILLING_DISPUTE",
+    "subject": "Surge charge clarification on Canal Road detour",
+    "description": "Driver suggested taking Canal road to avoid rush, but meter increased by PKR 50. Please review fare policy.",
+    "priority": "MEDIUM",
+    "status": "OPEN",
+    "internalNotes": "Waiting for driver GPS route log inspection",
+    "assignedTo": "admin",
+    "createdAt": "2026-10-08T11:08:07.394Z"
+  },
+  {
+    "id": "CMP-400",
+    "ticketNumber": "TKT-2026-0400",
+    "userId": "usr_1791471425203_8638e317",
+    "userName": "Malik Abubakkar",
+    "userRole": "DRIVER",
+    "rideId": "RIDE-1049",
+    "category": "APP_FEEDBACK",
+    "subject": "GPS route suggestion update for DHA Phase 5 gate",
+    "description": "The internal DHA security gate is closed after 11 PM, app suggested route through that gate.",
+    "priority": "LOW",
+    "status": "RESOLVED",
+    "createdAt": "2026-10-07T09:00:00.000Z",
+    "updatedAt": "2026-10-08T18:33:33.435Z"
+  }
+]

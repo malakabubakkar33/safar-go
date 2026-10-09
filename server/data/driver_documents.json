@@ -1,0 +1,44 @@
+[
+  {
+    "id": "doc_cnic_001",
+    "driverId": "drv_malik_001",
+    "documentType": "CNIC",
+    "documentNumber": "35201-8765432-1",
+    "documentImageFrontUrl": "/brand/safargo-symbol.svg",
+    "documentImageBackUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "APPROVED",
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.375Z"
+  },
+  {
+    "id": "doc_lic_001",
+    "driverId": "drv_malik_001",
+    "documentType": "LICENSE",
+    "documentNumber": "DL-98234-LHR",
+    "documentImageFrontUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "APPROVED",
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.376Z"
+  },
+  {
+    "id": "doc_cnic_003",
+    "driverId": "drv_zainab_003",
+    "documentType": "CNIC",
+    "documentNumber": "35202-1234567-9",
+    "documentImageFrontUrl": "/brand/safargo-symbol.svg",
+    "documentImageBackUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "PENDING",
+    "createdAt": "2026-10-02T11:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.376Z"
+  },
+  {
+    "id": "doc_lic_003",
+    "driverId": "drv_zainab_003",
+    "documentType": "LICENSE",
+    "documentNumber": "DL-55442-ISB",
+    "documentImageFrontUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "PENDING",
+    "createdAt": "2026-10-02T11:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.376Z"
+  }
+]

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- SafarGo Route S-Symbol -->
+  <path d="M 32 78 L 64 78 A 14 14 0 0 0 78 64 A 14 14 0 0 0 64 50 L 36 50 A 14 14 0 0 1 22 36 A 14 14 0 0 1 36 22 L 68 22" 
+        stroke="#16A34A" 
+        stroke-width="11" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  <!-- Integrated Forward Velocity Arrow -->
+  <path d="M 64 9.5 L 83 22 L 64 34.5 Z" 
+        fill="#16A34A"
+        stroke="#16A34A"
+        stroke-width="2"
+        stroke-linejoin="round"/>
+</svg>

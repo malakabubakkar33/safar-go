@@ -1,0 +1,356 @@
+/* ============================================================
+   SafarGo Onboarding Styles
+   Theme: Green (#16A34A) + White, Minimal, Premium, Mobile-First
+   ============================================================ */
+
+/* ---- Onboarding Root Container ---- */
+.onboarding-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.onboarding-screen.onboarding-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Device Frame centering for desktop/tablet view */
+.onboarding-wrapper {
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #ffffff;
+}
+
+/* ---- Top Navigation Bar ---- */
+.onboarding-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 24px 8px;
+  min-height: 56px;
+  z-index: 10;
+}
+
+.onboarding-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onboarding-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+
+.onboarding-brand-logo svg {
+  width: 16px;
+  height: 16px;
+}
+
+.onboarding-brand-text {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #16A34A;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-skip-btn {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.onboarding-skip-btn:hover {
+  color: #16A34A;
+  background-color: #F0FDF4;
+}
+
+.onboarding-skip-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---- Slides Carousel Track ---- */
+.onboarding-carousel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.onboarding-carousel:active {
+  cursor: grabbing;
+}
+
+.onboarding-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+/* ---- Single Slide ---- */
+.onboarding-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 24px 16px;
+  box-sizing: border-box;
+}
+
+/* Visual Artwork Area */
+.onboarding-artwork-container {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  margin: auto auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Subtle ambient backdrop aura for realism */
+.onboarding-artwork-aura {
+  position: absolute;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(22, 163, 74, 0.08) 0%, rgba(22, 163, 74, 0) 70%);
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(20px);
+}
+
+.onboarding-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.4s ease;
+  transform: scale(0.92);
+  opacity: 0.7;
+}
+
+.onboarding-slide.active .onboarding-image {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Content Area (Heading + Description) */
+.onboarding-content {
+  width: 100%;
+  text-align: center;
+  padding: 0 12px;
+  margin-bottom: auto;
+}
+
+.onboarding-heading {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.1s,
+              transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.1s;
+}
+
+.onboarding-slide.active .onboarding-heading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.onboarding-description {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.55;
+  max-width: 320px;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.18s,
+              transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.18s;
+}
+
+.onboarding-slide.active .onboarding-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Bottom Controls Area ---- */
+.onboarding-bottom-bar {
+  padding: 12px 24px max(24px, env(safe-area-inset-bottom, 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 10;
+}
+
+/* Pagination Indicators */
+.onboarding-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #E2E8F0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 0.35s ease,
+              border-radius 0.35s ease;
+  outline: none;
+}
+
+.onboarding-dot:hover {
+  background-color: #CBD5E1;
+}
+
+.onboarding-dot.active {
+  width: 28px;
+  background: linear-gradient(90deg, #16A34A 0%, #22C55E 100%);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
+}
+
+/* Primary Action Button */
+.onboarding-action-btn {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px -4px rgba(22, 163, 74, 0.4),
+              0 2px 6px -1px rgba(22, 163, 74, 0.2);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-action-btn:hover {
+  background: linear-gradient(135deg, #15803D 0%, #166534 100%);
+  box-shadow: 0 10px 28px -4px rgba(22, 163, 74, 0.5);
+  transform: translateY(-1px);
+}
+
+.onboarding-action-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 14px -2px rgba(22, 163, 74, 0.3);
+}
+
+.onboarding-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.onboarding-action-btn:hover .onboarding-btn-icon {
+  transform: translateX(3px);
+}
+
+/* Small Screens Responsive */
+@media screen and (max-height: 680px) {
+  .onboarding-artwork-container {
+    max-width: 240px;
+    margin-bottom: 8px;
+  }
+
+  .onboarding-heading {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+
+  .onboarding-description {
+    font-size: 0.88rem;
+  }
+
+  .onboarding-action-btn {
+    height: 50px;
+    font-size: 0.98rem;
+  }
+
+  .onboarding-bottom-bar {
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .onboarding-heading {
+    font-size: 1.35rem;
+  }
+
+  .onboarding-description {
+    font-size: 0.85rem;
+  }
+
+  .onboarding-top-bar {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

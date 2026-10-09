@@ -1,0 +1,51 @@
+[
+  {
+    "id": "veh_001",
+    "driverId": "drv_malik_001",
+    "vehicleType": "BIKE",
+    "registrationNumber": "LEA-2024",
+    "make": "Honda",
+    "model": "CD 70",
+    "color": "Red",
+    "numberPlateImageUrl": "/uploads/avatars/driver-avatar-1791474464902-cc77bd75d40bc20c.jpg",
+    "verificationStatus": "APPROVED",
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.373Z"
+  },
+  {
+    "id": "veh_002",
+    "driverId": "drv_bilal_002",
+    "vehicleType": "CAR",
+    "registrationNumber": "ICT-4890",
+    "make": "Toyota",
+    "model": "Corolla GLi",
+    "color": "White",
+    "numberPlateImageUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "APPROVED",
+    "createdAt": "2026-09-18T09:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.373Z"
+  },
+  {
+    "id": "veh_003",
+    "driverId": "drv_zainab_003",
+    "vehicleType": "CAR",
+    "registrationNumber": "LXZ-9012",
+    "make": "Suzuki",
+    "model": "Alto VXR",
+    "color": "Silver",
+    "numberPlateImageUrl": "/brand/safargo-symbol.svg",
+    "verificationStatus": "PENDING",
+    "createdAt": "2026-10-02T11:00:00.000Z",
+    "updatedAt": "2026-10-08T16:08:07.373Z"
+  },
+  {
+    "id": "veh_1791482668869_4jexa50",
+    "vehicleType": "BIKE",
+    "registrationNumber": "",
+    "numberPlateImageUrl": "",
+    "vehicleImageUrl": null,
+    "createdAt": "2026-10-08T18:04:28.869Z",
+    "updatedAt": "2026-10-08T18:38:07.212Z",
+    "isVerified": true
+  }
+]

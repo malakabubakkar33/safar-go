@@ -1,0 +1,134 @@
+[
+  {
+    "id": "msg_1791535620599_sys",
+    "rideId": "ride_1791535618256_0r97t",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo Dispatch",
+    "content": "You selected Malik Abubakkar's offer of PKR 328. You can negotiate or accept this fare.",
+    "type": "SYSTEM",
+    "amount": 328,
+    "createdAt": "2026-10-09T08:47:00.600Z"
+  },
+  {
+    "id": "msg_1791535620671_cntr",
+    "rideId": "ride_1791535618256_0r97t",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "Test Driver & Traveler proposed a counter offer of PKR 220",
+    "type": "COUNTER_OFFER",
+    "amount": 220,
+    "createdAt": "2026-10-09T08:47:00.671Z"
+  },
+  {
+    "id": "msg_1791535620745_1nw4",
+    "rideId": "ride_1791535618256_0r97t",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "I am waiting near the main gate. Please hurry!",
+    "type": "TEXT",
+    "amount": null,
+    "createdAt": "2026-10-09T08:47:00.745Z"
+  },
+  {
+    "id": "msg_1791535620855_agr",
+    "rideId": "ride_1791535618256_0r97t",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo System",
+    "content": "Fare agreed at PKR 220! Proceeding to payment confirmation.",
+    "type": "AGREED",
+    "amount": 220,
+    "createdAt": "2026-10-09T08:47:00.855Z"
+  },
+  {
+    "id": "msg_1791540458439_sys",
+    "rideId": "ride_1791540456136_nqv1x",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo Dispatch",
+    "content": "You selected Malik Abubakkar's offer of PKR 328. You can negotiate or accept this fare.",
+    "type": "SYSTEM",
+    "amount": 328,
+    "createdAt": "2026-10-09T10:07:38.439Z"
+  },
+  {
+    "id": "msg_1791540458476_cntr",
+    "rideId": "ride_1791540456136_nqv1x",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "Test Driver & Traveler proposed a counter offer of PKR 220",
+    "type": "COUNTER_OFFER",
+    "amount": 220,
+    "createdAt": "2026-10-09T10:07:38.476Z"
+  },
+  {
+    "id": "msg_1791540458501_ulsm",
+    "rideId": "ride_1791540456136_nqv1x",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "I am waiting near the main gate. Please hurry!",
+    "type": "TEXT",
+    "amount": null,
+    "createdAt": "2026-10-09T10:07:38.501Z"
+  },
+  {
+    "id": "msg_1791540458532_agr",
+    "rideId": "ride_1791540456136_nqv1x",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo System",
+    "content": "Fare agreed at PKR 220! Proceeding to payment confirmation.",
+    "type": "AGREED",
+    "amount": 220,
+    "createdAt": "2026-10-09T10:07:38.532Z"
+  },
+  {
+    "id": "msg_1791541420452_sys",
+    "rideId": "ride_1791541418179_tcw8t",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo Dispatch",
+    "content": "You selected Malik Abubakkar's offer of PKR 328. You can negotiate or accept this fare.",
+    "type": "SYSTEM",
+    "amount": 328,
+    "createdAt": "2026-10-09T10:23:40.453Z"
+  },
+  {
+    "id": "msg_1791541420478_cntr",
+    "rideId": "ride_1791541418179_tcw8t",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "Test Driver & Traveler proposed a counter offer of PKR 220",
+    "type": "COUNTER_OFFER",
+    "amount": 220,
+    "createdAt": "2026-10-09T10:23:40.478Z"
+  },
+  {
+    "id": "msg_1791541420505_ssf5",
+    "rideId": "ride_1791541418179_tcw8t",
+    "senderId": "usr_testdriver_001",
+    "senderRole": "CUSTOMER",
+    "senderName": "Test Driver & Traveler",
+    "content": "I am waiting near the main gate. Please hurry!",
+    "type": "TEXT",
+    "amount": null,
+    "createdAt": "2026-10-09T10:23:40.505Z"
+  },
+  {
+    "id": "msg_1791541420545_agr",
+    "rideId": "ride_1791541418179_tcw8t",
+    "senderId": "SYSTEM",
+    "senderRole": "SYSTEM",
+    "senderName": "SafarGo System",
+    "content": "Fare agreed at PKR 220! Proceeding to payment confirmation.",
+    "type": "AGREED",
+    "amount": 220,
+    "createdAt": "2026-10-09T10:23:40.545Z"
+  }
+]

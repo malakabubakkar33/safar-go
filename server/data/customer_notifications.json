@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cntf_1791541420582_5r4cl",
+    "userId": "usr_testdriver_001",
+    "title": "Driver Assigned!",
+    "message": "Malik Abubakkar is on the way to pick you up in a BIKE (LE-2024).",
+    "type": "RIDE",
+    "rideId": "ride_1791541418179_tcw8t",
+    "isRead": false,
+    "createdAt": "2026-10-09T10:23:40.582Z"
+  },
+  {
+    "id": "cntf_1791540458571_o7gv9",
+    "userId": "usr_testdriver_001",
+    "title": "Driver Assigned!",
+    "message": "Malik Abubakkar is on the way to pick you up in a BIKE (LE-2024).",
+    "type": "RIDE",
+    "rideId": "ride_1791540456136_nqv1x",
+    "isRead": false,
+    "createdAt": "2026-10-09T10:07:38.571Z"
+  },
+  {
+    "id": "cntf_1791535620964_36v61",
+    "userId": "usr_testdriver_001",
+    "title": "Driver Assigned!",
+    "message": "Malik Abubakkar is on the way to pick you up in a BIKE (LE-2024).",
+    "type": "RIDE",
+    "rideId": "ride_1791535618256_0r97t",
+    "isRead": false,
+    "createdAt": "2026-10-09T08:47:00.964Z"
+  }
+]

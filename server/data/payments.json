@@ -1,0 +1,58 @@
+[
+  {
+    "id": "PAY-8821",
+    "rideId": "RIDE-1048",
+    "customerId": "usr_rider_003",
+    "customerName": "Hamza Tariq",
+    "driverId": "drv_bilal_002",
+    "driverName": "Bilal Khan",
+    "amount": 1150,
+    "commissionAmount": 138,
+    "paymentMethod": "SafarPay Wallet",
+    "status": "SUCCESS",
+    "createdAt": "2026-10-07T15:06:00.000Z"
+  },
+  {
+    "id": "PAY-8820",
+    "rideId": "RIDE-1047",
+    "customerId": "usr_rider_002",
+    "customerName": "Sara Ahmed",
+    "driverId": "drv_bilal_002",
+    "driverName": "Bilal Khan",
+    "amount": 890,
+    "commissionAmount": 106.8,
+    "paymentMethod": "Cash",
+    "status": "SUCCESS",
+    "createdAt": "2026-10-06T19:43:00.000Z"
+  },
+  {
+    "id": "pay_1791535620922",
+    "rideId": "ride_1791535618256_0r97t",
+    "customerId": "usr_testdriver_001",
+    "driverId": "drv_malik_001",
+    "amount": 220,
+    "method": "CASH",
+    "status": "PENDING",
+    "createdAt": "2026-10-09T08:47:00.922Z"
+  },
+  {
+    "id": "pay_1791540458553",
+    "rideId": "ride_1791540456136_nqv1x",
+    "customerId": "usr_testdriver_001",
+    "driverId": "drv_malik_001",
+    "amount": 220,
+    "method": "CASH",
+    "status": "PENDING",
+    "createdAt": "2026-10-09T10:07:38.553Z"
+  },
+  {
+    "id": "pay_1791541420566",
+    "rideId": "ride_1791541418179_tcw8t",
+    "customerId": "usr_testdriver_001",
+    "driverId": "drv_malik_001",
+    "amount": 220,
+    "method": "CASH",
+    "status": "PENDING",
+    "createdAt": "2026-10-09T10:23:40.566Z"
+  }
+]

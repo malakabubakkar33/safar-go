@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ntf_1791480701819_jq80n",
+    "title": "Driver Application Approved",
+    "message": "Zainab Fatima has been approved as an active driver.",
+    "type": "APPLICATION",
+    "isRead": true,
+    "targetId": "drv_zainab_003",
+    "createdAt": "2026-10-08T17:31:41.819Z"
+  },
+  {
+    "id": "ntf_001",
+    "title": "New Driver Application Submitted",
+    "message": "Zainab Fatima submitted Car onboarding documents for review.",
+    "type": "APPLICATION",
+    "isRead": true,
+    "targetId": "drv_zainab_003",
+    "createdAt": "2026-10-08T14:08:07.405Z"
+  },
+  {
+    "id": "ntf_002",
+    "title": "Support Ticket Opened",
+    "message": "Customer Sara Ahmed submitted a billing inquiry on Ride #RIDE-1047.",
+    "type": "COMPLAINT",
+    "isRead": true,
+    "targetId": "CMP-401",
+    "createdAt": "2026-10-08T11:08:07.405Z"
+  },
+  {
+    "id": "ntf_003",
+    "title": "Platform System Alert",
+    "message": "Database backup synchronized successfully with local replication.",
+    "type": "ALERT",
+    "isRead": true,
+    "targetId": null,
+    "createdAt": "2026-10-07T00:00:00.000Z"
+  }
+]

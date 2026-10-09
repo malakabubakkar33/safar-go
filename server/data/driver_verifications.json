@@ -1,0 +1,80 @@
+[
+  {
+    "id": "ver_1791474464960_5z1odei",
+    "driverId": "drv_1791474464575_xm4wrc5",
+    "status": "PENDING_VERIFICATION",
+    "notes": "Driver onboarding application submitted for compliance verification.",
+    "reviewedBy": "System / User Submission",
+    "reviewedAt": "2026-10-08T15:47:44.961Z",
+    "createdAt": "2026-10-08T15:47:44.961Z"
+  },
+  {
+    "id": "ver_1791474465006_3fw3lt8",
+    "driverId": "drv_1791474464575_xm4wrc5",
+    "status": "REJECTED",
+    "notes": "Reviewed by compliance auditor",
+    "reviewedBy": "malik",
+    "reviewedAt": "2026-10-08T15:47:45.006Z",
+    "createdAt": "2026-10-08T15:47:45.006Z"
+  },
+  {
+    "id": "ver_1791474465056_pzbnape",
+    "driverId": "drv_1791474464575_xm4wrc5",
+    "status": "APPROVED",
+    "notes": "Compliance verified and approved",
+    "reviewedBy": "malik",
+    "reviewedAt": "2026-10-08T15:47:45.056Z",
+    "createdAt": "2026-10-08T15:47:45.057Z"
+  },
+  {
+    "id": "ver_1791475568880_ad3hl8f",
+    "driverId": "drv_1791475408859_xdg28yj",
+    "status": "PENDING_VERIFICATION",
+    "notes": "Driver onboarding application submitted for compliance verification.",
+    "reviewedBy": "System / User Submission",
+    "reviewedAt": "2026-10-08T16:06:08.880Z",
+    "createdAt": "2026-10-08T16:06:08.880Z"
+  },
+  {
+    "id": "ver_1791475573241_t2kn6e7",
+    "driverId": "drv_1791475408859_xdg28yj",
+    "status": "APPROVED",
+    "notes": "Simulated admin review action: APPROVE",
+    "reviewedBy": "malik",
+    "reviewedAt": "2026-10-08T16:06:13.241Z",
+    "createdAt": "2026-10-08T16:06:13.241Z"
+  },
+  {
+    "id": "ver_1791477091985_chpa9wi",
+    "driverId": "drv_malik_001",
+    "notes": "Action by SafarGo Chief Operations",
+    "reviewedBy": "SafarGo Chief Operations",
+    "reviewedAt": "2026-10-08T16:31:31.985Z",
+    "createdAt": "2026-10-08T16:31:31.985Z"
+  },
+  {
+    "id": "ver_1791477264096_3asxnk0",
+    "driverId": "drv_malik_001",
+    "notes": "Action by SafarGo Chief Operations",
+    "reviewedBy": "SafarGo Chief Operations",
+    "reviewedAt": "2026-10-08T16:34:24.096Z",
+    "createdAt": "2026-10-08T16:34:24.096Z"
+  },
+  {
+    "id": "ver_1791477574659_zt68i65",
+    "driverId": "drv_malik_001",
+    "notes": "Action by SafarGo Chief Operations",
+    "reviewedBy": "SafarGo Chief Operations",
+    "reviewedAt": "2026-10-08T16:39:34.659Z",
+    "createdAt": "2026-10-08T16:39:34.659Z"
+  },
+  {
+    "id": "ver_1791480701918_edjzquw",
+    "driverId": "drv_zainab_003",
+    "status": "APPROVED",
+    "notes": "Action by SafarGo Chief Operations",
+    "reviewedBy": "SafarGo Chief Operations",
+    "reviewedAt": "2026-10-08T17:31:41.918Z",
+    "createdAt": "2026-10-08T17:31:41.918Z"
+  }
+]

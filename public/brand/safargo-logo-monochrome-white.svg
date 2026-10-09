@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" fill="none">
+  <defs>
+    <style>
+      .mono-white-text {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        fill: #FFFFFF;
+        letter-spacing: -0.03em;
+      }
+    </style>
+  </defs>
+
+  <!-- White Route Symbol Mark -->
+  <g transform="translate(10, 8) scale(0.74)">
+    <path d="M 32 78 L 64 78 A 14 14 0 0 0 78 64 A 14 14 0 0 0 64 50 L 36 50 A 14 14 0 0 1 22 36 A 14 14 0 0 1 36 22 L 68 22" 
+          stroke="#FFFFFF" 
+          stroke-width="11" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+    <path d="M 64 9.5 L 83 22 L 64 34.5 Z" 
+          fill="#FFFFFF"
+          stroke="#FFFFFF"
+          stroke-width="2"
+          stroke-linejoin="round"/>
+  </g>
+
+  <!-- Wordmark in White -->
+  <text x="96" y="62" class="mono-white-text">SafarGo</text>
+</svg>

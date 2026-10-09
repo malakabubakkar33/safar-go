@@ -1,0 +1,29 @@
+[
+  {
+    "id": "plc_1791535621237_tc78",
+    "userId": "usr_testdriver_001",
+    "label": "Office HQ",
+    "address": "Arfa Software Technology Park, Ferozepur Road, Lahore",
+    "lat": 31.4757,
+    "lng": 74.3414,
+    "createdAt": "2026-10-09T08:47:01.237Z"
+  },
+  {
+    "id": "plc_1791540458678_ou96",
+    "userId": "usr_testdriver_001",
+    "label": "Office HQ (Saddar)",
+    "address": "Deans Trade Center, Saddar Road, Peshawar",
+    "lat": 34.0048,
+    "lng": 71.5385,
+    "createdAt": "2026-10-09T10:07:38.678Z"
+  },
+  {
+    "id": "plc_1791541420670_g5hk",
+    "userId": "usr_testdriver_001",
+    "label": "Office HQ (Saddar)",
+    "address": "Deans Trade Center, Saddar Road, Peshawar",
+    "lat": 34.0048,
+    "lng": 71.5385,
+    "createdAt": "2026-10-09T10:23:40.670Z"
+  }
+]

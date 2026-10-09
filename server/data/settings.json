@@ -1,0 +1,15 @@
+{
+  "baseFareBike": 120,
+  "perKmBike": 35,
+  "baseFareCar": 350,
+  "perKmCar": 75,
+  "driverCommissionPercentage": 12,
+  "cancellationFee": 100,
+  "maintenanceMode": false,
+  "announcementBanner": "Welcome to SafarGo - Ride safe, travel smart",
+  "supportPhone": "+92 42 111 723 274",
+  "supportEmail": "support@safargo.com",
+  "updatedAt": "2026-10-08T16:39:34.690Z",
+  "driverCommissionPercent": 12,
+  "minFare": 120
+}

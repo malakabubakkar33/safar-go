@@ -1,0 +1,609 @@
+/* ============================================================
+   SafarGo - Authentication Flow Styles (Login & Multi-Step Signup)
+   Theme: Green (#16A34A) + White, Minimal, Premium, Mobile-First
+   ============================================================ */
+
+/* Root Auth Screen Container */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-screen.auth-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Centered Mobile Device Frame */
+.auth-wrapper {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: max(20px, env(safe-area-inset-top, 20px)) 24px max(24px, env(safe-area-inset-bottom, 24px));
+  box-sizing: border-box;
+  position: relative;
+  background: #ffffff;
+}
+
+/* ---- Top Header Bar ---- */
+.auth-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  margin-bottom: 24px;
+}
+
+.auth-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1E293B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.auth-nav-btn:hover {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #16A34A;
+}
+
+.auth-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.auth-step-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #16A34A;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* ---- Branding Header ---- */
+.auth-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.auth-titles {
+  margin-bottom: 28px;
+}
+
+.auth-title {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  font-size: 0.95rem;
+  color: #64748B;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ---- Alert / Error Banner ---- */
+.auth-alert {
+  display: none;
+  align-items: flex-start;
+  gap: 12px;
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+  color: #991B1B;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-bottom: 20px;
+  animation: authFadeIn 0.3s ease;
+}
+
+.auth-alert.visible {
+  display: flex;
+}
+
+.auth-alert.success {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #15803D;
+}
+
+.auth-alert.success .auth-alert-icon {
+  stroke: #16A34A;
+}
+
+.auth-alert-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---- Form Fields ---- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.auth-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: -0.01em;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input {
+  width: 100%;
+  height: 52px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.auth-input::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.auth-input:focus {
+  background: #FFFFFF;
+  border-color: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.auth-input.has-error {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
+.auth-toggle-pwd {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #64748B;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.auth-toggle-pwd:hover {
+  color: #0F172A;
+}
+
+.auth-forgot-link {
+  align-self: flex-end;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #16A34A;
+  text-decoration: none;
+  margin-top: 2px;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  color: #15803D;
+  text-decoration: underline;
+}
+
+/* Primary Action Button */
+.auth-primary-btn {
+  width: 100%;
+  height: 54px;
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.4);
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.auth-primary-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #15803D 0%, #166534 100%);
+  box-shadow: 0 10px 24px -4px rgba(22, 163, 74, 0.5);
+  transform: translateY(-1px);
+}
+
+.auth-primary-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.auth-primary-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Switch Link Footer */
+.auth-switch-footer {
+  margin-top: auto;
+  padding-top: 24px;
+  text-align: center;
+  font-size: 0.92rem;
+  color: #64748B;
+}
+
+.auth-switch-link {
+  color: #16A34A;
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.auth-switch-link:hover {
+  color: #15803D;
+  text-decoration: underline;
+}
+
+/* ============================================================
+   OTP VERIFICATION SCREEN
+   ============================================================ */
+.otp-email-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.otp-boxes {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.otp-box {
+  flex: 1;
+  max-width: 56px;
+  height: 60px;
+  background: #F8FAFC;
+  border: 2px solid #E2E8F0;
+  border-radius: 14px;
+  text-align: center;
+  font-family: 'Plus Jakarta Sans', monospace;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.otp-box:focus {
+  background: #FFFFFF;
+  border-color: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+  transform: translateY(-2px);
+}
+
+.otp-box.filled {
+  border-color: #16A34A;
+  background: #F0FDF4;
+}
+
+.otp-resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #64748B;
+  margin-bottom: 24px;
+}
+
+.otp-resend-btn {
+  background: transparent;
+  border: none;
+  color: #16A34A;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.otp-resend-btn:disabled {
+  color: #94A3B8;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   PROFILE IMAGE SETUP SCREEN
+   ============================================================ */
+.avatar-setup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0 32px;
+}
+
+.avatar-preview-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 24px;
+}
+
+.avatar-preview-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #F0FDF4;
+  border: 3px solid #16A34A;
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.avatar-placeholder-icon {
+  width: 64px;
+  height: 64px;
+  color: #16A34A;
+}
+
+.avatar-camera-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #16A34A;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-camera-badge:hover {
+  transform: scale(1.08);
+}
+
+.avatar-actions-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.avatar-action-btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  color: #1E293B;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-action-btn:hover {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #16A34A;
+}
+
+/* ============================================================
+   PASSWORD CREATION SCREEN & STRENGTH METER
+   ============================================================ */
+.password-meter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.password-meter-bars {
+  display: flex;
+  gap: 6px;
+  height: 5px;
+}
+
+.meter-bar {
+  flex: 1;
+  background: #E2E8F0;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.meter-bar.active-weak { background: #EF4444; }
+.meter-bar.active-medium { background: #F59E0B; }
+.meter-bar.active-strong { background: #16A34A; }
+
+.password-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #94A3B8;
+  transition: color 0.2s ease;
+}
+
+.rule-item.valid {
+  color: #16A34A;
+  font-weight: 600;
+}
+
+.rule-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   ACCOUNT CREATED SUCCESS MODAL
+   ============================================================ */
+.success-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.35s ease;
+}
+
+.success-screen.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.success-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 40px 32px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  transform: scale(0.9);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.success-screen.visible .success-card {
+  transform: scale(1);
+}
+
+.success-check-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #F0FDF4;
+  border: 3px solid #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #16A34A;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.2);
+  animation: checkPulse 1.2s ease infinite;
+}
+
+.success-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 8px;
+}
+
+.success-subtitle {
+  font-size: 0.95rem;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+@keyframes checkPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

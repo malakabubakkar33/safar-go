@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="description" content="SafarGo - Your trusted ride booking and pick-and-drop service. Book bikes and cars for safe, reliable transportation." />
+  <title>SafarGo</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/safargo-symbol.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/splash.css" />
+  <link rel="stylesheet" href="/src/styles/onboarding.css" />
+  <link rel="stylesheet" href="/src/styles/auth.css" />
+  <link rel="stylesheet" href="/src/styles/app.css" />
+  <link rel="stylesheet" href="/src/styles/driverOnboarding.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    /* Critical inline styles to prevent FOUC and white flash */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background-color: #ffffff; }
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="splash-screen" aria-label="SafarGo loading">
+    <!-- Video Splash -->
+    <div class="splash-video-container">
+      <video
+        id="splash-video"
+        class="splash-video"
+        autoplay
+        muted
+        playsinline
+        disablepictureinpicture
+        disableremoteplayback
+        preload="auto"
+        aria-hidden="true"
+      >
+        <source src="/splash-video.mp4" type="video/mp4" />
+      </video>
+    </div>
+
+    <!-- Fallback (shown if video fails to load) -->
+    <div id="splash-fallback" class="splash-fallback" style="display: none;">
+      <div class="splash-fallback-content">
+        <div class="splash-logo-icon">
+          <img src="/brand/safargo-symbol.svg" width="72" height="72" alt="SafarGo" />
+        </div>
+        <h1 class="splash-brand-name">SafarGo</h1>
+        <p class="splash-tagline">Your ride, your way</p>
+        <div class="splash-loader">
+          <div class="splash-loader-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding Screen -->
+  <div id="onboarding-screen" class="onboarding-screen" style="display: none;" aria-label="SafarGo Onboarding">
+    <div class="onboarding-wrapper">
+      <!-- Top Navigation -->
+      <header class="onboarding-top-bar">
+        <div class="onboarding-brand">
+          <img src="/brand/safargo-logo-horizontal.svg" height="28" alt="SafarGo" />
+        </div>
+        <button id="onboarding-skip-btn" class="onboarding-skip-btn" type="button" aria-label="Skip onboarding">Skip</button>
+      </header>
+
+      <!-- Horizontal Carousel -->
+      <div id="onboarding-carousel" class="onboarding-carousel">
+        <div id="onboarding-track" class="onboarding-track">
+          <!-- Slide 1: Bike -->
+          <div class="onboarding-slide active" data-index="0">
+            <div class="onboarding-artwork-container">
+              <div class="onboarding-artwork-aura"></div>
+              <img src="/images/onboarding_bike.jpg" alt="SafarGo Modern Bike" class="onboarding-image" />
+            </div>
+            <div class="onboarding-content">
+              <h2 class="onboarding-heading">Your Ride, Your Way</h2>
+              <p class="onboarding-description">Choose a ride that fits your journey and travel with ease.</p>
+            </div>
+          </div>
+
+          <!-- Slide 2: Car -->
+          <div class="onboarding-slide" data-index="1">
+            <div class="onboarding-artwork-container">
+              <div class="onboarding-artwork-aura"></div>
+              <img src="/images/onboarding_car.jpg" alt="SafarGo Comfortable Car" class="onboarding-image" />
+            </div>
+            <div class="onboarding-content">
+              <h2 class="onboarding-heading">Comfort at Your Door</h2>
+              <p class="onboarding-description">Find a comfortable ride from nearby service providers.</p>
+            </div>
+          </div>
+
+          <!-- Slide 3: Location -->
+          <div class="onboarding-slide" data-index="2">
+            <div class="onboarding-artwork-container">
+              <div class="onboarding-artwork-aura"></div>
+              <img src="/images/onboarding_location.jpg" alt="SafarGo Live Navigation" class="onboarding-image" />
+            </div>
+            <div class="onboarding-content">
+              <h2 class="onboarding-heading">Track Every Journey</h2>
+              <p class="onboarding-description">See your ride and follow its journey in real time.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Controls -->
+      <footer class="onboarding-bottom-bar">
+        <!-- 3 Pagination Indicators -->
+        <div class="onboarding-pagination" role="tablist" aria-label="Onboarding pagination">
+          <button class="onboarding-dot active" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+          <button class="onboarding-dot" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+          <button class="onboarding-dot" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+        </div>
+
+        <!-- Primary Action Button -->
+        <button id="onboarding-action-btn" class="onboarding-action-btn" type="button">
+          <span id="onboarding-btn-text">Continue</span>
+          <svg class="onboarding-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Authentication Screen (Login & Multi-Step Signup) -->
+  <div id="auth-screen" class="auth-screen" style="display: none;" aria-label="SafarGo Authentication">
+    <div class="auth-wrapper">
+
+      <!-- ================= 1. LOGIN VIEW ================= -->
+      <div id="view-login" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-brand-badge">
+          <img src="/brand/safargo-logo-horizontal.svg" height="32" alt="SafarGo" />
+        </div>
+
+        <div class="auth-titles">
+          <h1 class="auth-title">Welcome to SafarGo</h1>
+          <p class="auth-subtitle">Your journey starts here.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="login-form" class="auth-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="login-identifier">Account Identifier</label>
+            <div class="auth-input-wrap">
+              <input 
+                type="text" 
+                id="login-identifier" 
+                class="auth-input" 
+                placeholder="Username, email or phone number" 
+                autocomplete="username" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="login-password">Password</label>
+            <div class="auth-input-wrap">
+              <input 
+                type="password" 
+                id="login-password" 
+                class="auth-input" 
+                placeholder="Password" 
+                autocomplete="current-password" 
+                required 
+              />
+              <button type="button" id="toggle-login-pwd" class="auth-toggle-pwd" aria-label="Show or hide password">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <a href="#forgot" id="auth-forgot-link" class="auth-forgot-link">Forgot Password?</a>
+          </div>
+
+          <button type="submit" id="login-btn" class="auth-primary-btn">
+            <span>Login</span>
+          </button>
+        </form>
+
+        <div class="auth-switch-footer">
+          Don't have an account? <a href="#signup" id="to-signup-btn" class="auth-switch-link">Sign Up</a>
+        </div>
+      </div>
+
+      <!-- ================= 2. SIGNUP STEP 1: BASIC INFORMATION ================= -->
+      <div id="view-signup-step1" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-login-btn" class="auth-nav-btn" aria-label="Back to login">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Step 1 of 4</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Create Your Account</h2>
+          <p class="auth-subtitle">Let's get to know you.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="signup-step1-form" class="auth-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="step1-fullname">Full Name</label>
+            <div class="auth-input-wrap">
+              <input type="text" id="step1-fullname" class="auth-input" placeholder="e.g. Malik Abubakar" autocomplete="name" required />
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="step1-email">Email Address</label>
+            <div class="auth-input-wrap">
+              <input type="email" id="step1-email" class="auth-input" placeholder="e.g. name@example.com" autocomplete="email" required />
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="step1-phone">Phone Number</label>
+            <div class="auth-input-wrap">
+              <input type="tel" id="step1-phone" class="auth-input" placeholder="e.g. +92 300 1234567" autocomplete="tel" required />
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="step1-username">Username</label>
+            <div class="auth-input-wrap">
+              <input type="text" id="step1-username" class="auth-input" placeholder="e.g. malik_safargo" autocomplete="username" required />
+            </div>
+          </div>
+
+          <button type="submit" id="step1-next-btn" class="auth-primary-btn">
+            <span>Next</span>
+          </button>
+        </form>
+
+        <div class="auth-switch-footer">
+          Already have an account? <a href="#login" id="to-login-from-step1" class="auth-switch-link">Login</a>
+        </div>
+      </div>
+
+      <!-- ================= 3. SIGNUP STEP 2: REAL EMAIL OTP ================= -->
+      <div id="view-signup-otp" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-step1-btn" class="auth-nav-btn" aria-label="Back to step 1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Step 2 of 4</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Verify Your Email</h2>
+          <p class="auth-subtitle">We've sent a verification code to your email.</p>
+        </div>
+
+        <div class="otp-email-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span id="otp-masked-email">email@domain.com</span>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <div class="otp-boxes">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 1" />
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 2" />
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 3" />
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 4" />
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 5" />
+          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" aria-label="Digit 6" />
+        </div>
+
+        <div class="otp-resend-row">
+          <span>Didn't receive the code?</span>
+          <button type="button" id="otp-resend-btn" class="otp-resend-btn" disabled>Resend Code</button>
+          <span id="otp-cooldown-text" style="color: #94A3B8; font-size: 0.85rem;"></span>
+        </div>
+
+        <button type="button" id="otp-verify-btn" class="auth-primary-btn">
+          <span>Verify Code</span>
+        </button>
+      </div>
+
+      <!-- ================= 4. SIGNUP STEP 3: PROFILE IMAGE ================= -->
+      <div id="view-signup-avatar" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-otp-btn" class="auth-nav-btn" aria-label="Back to OTP">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Step 3 of 4</div>
+        </div>
+
+        <div class="auth-titles" style="text-align: center;">
+          <h2 class="auth-title">Add Your Profile Photo</h2>
+          <p class="auth-subtitle">Add a photo so people can recognize you.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <div class="avatar-setup-container">
+          <div class="avatar-preview-wrapper">
+            <div class="avatar-preview-circle">
+              <svg id="avatar-placeholder" class="avatar-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <img id="avatar-preview-img" class="avatar-preview-img" alt="Profile preview" />
+            </div>
+            <div class="avatar-camera-badge" onclick="document.getElementById('avatar-file-input').click();">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+
+          <!-- Hidden File Inputs -->
+          <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;" />
+          <input type="file" id="avatar-camera-input" accept="image/*" capture="user" style="display: none;" />
+
+          <div class="avatar-actions-row">
+            <button type="button" id="btn-choose-gallery" class="avatar-action-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              Choose from Gallery
+            </button>
+            <button type="button" id="btn-take-photo" class="avatar-action-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Take Photo
+            </button>
+          </div>
+        </div>
+
+        <button type="button" id="avatar-next-btn" class="auth-primary-btn" style="margin-top: auto;">
+          <span>Next</span>
+        </button>
+      </div>
+
+      <!-- ================= 5. SIGNUP STEP 4: PASSWORD CREATION ================= -->
+      <div id="view-signup-password" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-avatar-btn" class="auth-nav-btn" aria-label="Back to avatar step">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Step 4 of 4</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Create Your Password</h2>
+          <p class="auth-subtitle">Secure your SafarGo account.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="signup-password-form" class="auth-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="step4-password">Password</label>
+            <div class="auth-input-wrap">
+              <input type="password" id="step4-password" class="auth-input" placeholder="Create a strong password" autocomplete="new-password" required />
+              <button type="button" id="toggle-step4-pwd" class="auth-toggle-pwd" aria-label="Toggle password visibility">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            
+            <!-- Strength Meter -->
+            <div class="password-meter-wrap">
+              <div class="password-meter-bars">
+                <div class="meter-bar"></div>
+                <div class="meter-bar"></div>
+                <div class="meter-bar"></div>
+              </div>
+              <div class="password-rules-list">
+                <div class="rule-item" id="rule-length">
+                  <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  At least 8 characters
+                </div>
+                <div class="rule-item" id="rule-upper">
+                  <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  One uppercase letter (A-Z)
+                </div>
+                <div class="rule-item" id="rule-lower">
+                  <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  One lowercase letter (a-z)
+                </div>
+                <div class="rule-item" id="rule-number">
+                  <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  One number (0-9)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="step4-confirm-password">Confirm Password</label>
+            <div class="auth-input-wrap">
+              <input type="password" id="step4-confirm-password" class="auth-input" placeholder="Repeat your password" autocomplete="new-password" required />
+              <button type="button" id="toggle-step4-confirm" class="auth-toggle-pwd" aria-label="Toggle confirm password visibility">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="step4-submit-btn" class="auth-primary-btn">
+            <span>Create Account</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- ================= 5. FORGOT PASSWORD 1: EMAIL ================= -->
+      <div id="view-forgot-email" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-login-from-forgot" class="auth-nav-btn" aria-label="Back to login">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Reset Password</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Forgot Password?</h2>
+          <p class="auth-subtitle">Enter your registered email address to receive a secure verification code.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="forgot-email-form" class="auth-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="forgot-email-input">Registered Email Address</label>
+            <div class="auth-input-wrap">
+              <input 
+                type="email" 
+                id="forgot-email-input" 
+                class="auth-input" 
+                placeholder="name@example.com" 
+                autocomplete="email" 
+                required 
+              />
+            </div>
+          </div>
+
+          <button type="submit" id="forgot-email-submit-btn" class="auth-primary-btn">
+            <span>Send Reset Code</span>
+          </button>
+        </form>
+
+        <div class="auth-switch-footer">
+          Remembered password? <a href="#login" id="to-login-from-forgot-link" class="auth-switch-link">Back to Login</a>
+        </div>
+      </div>
+
+      <!-- ================= 6. FORGOT PASSWORD 2: OTP VERIFICATION ================= -->
+      <div id="view-forgot-otp" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <button type="button" id="back-to-forgot-email-btn" class="auth-nav-btn" aria-label="Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="auth-step-pill">Verification</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Verify Reset Code</h2>
+          <p class="auth-subtitle">We sent a 6-digit code to <strong id="forgot-masked-email" style="color: #0F172A;">your email</strong></p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="forgot-otp-form" class="auth-form" novalidate>
+          <div class="otp-inputs-grid">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="0" autocomplete="one-time-code" required />
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="1" required />
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="2" required />
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="3" required />
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="4" required />
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-digit-input forgot-otp-box" data-idx="5" required />
+          </div>
+
+          <button type="submit" id="forgot-otp-submit-btn" class="auth-primary-btn" style="margin-top: 24px;">
+            <span>Verify Code</span>
+          </button>
+        </form>
+
+        <div class="otp-resend-row" style="margin-top: 20px;">
+          <span>Didn't receive code? </span>
+          <button type="button" id="forgot-resend-btn" class="otp-resend-link" disabled>
+            Resend Code (<span id="forgot-resend-timer">60</span>s)
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 7. FORGOT PASSWORD 3: NEW PASSWORD ================= -->
+      <div id="view-forgot-password" style="display: none; flex-direction: column; width: 100%; height: 100%;">
+        <div class="auth-top-nav">
+          <div class="auth-step-pill" style="margin-left: auto;">New Password</div>
+        </div>
+
+        <div class="auth-titles">
+          <h2 class="auth-title">Set New Password</h2>
+          <p class="auth-subtitle">Create a strong password to replace your old password.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="auth-alert" role="alert">
+          <svg class="auth-alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="auth-alert-text"></span>
+        </div>
+
+        <form id="forgot-new-pwd-form" class="auth-form" novalidate>
+          <div class="auth-field">
+            <label class="auth-label" for="forgot-new-pwd">New Password</label>
+            <div class="auth-input-wrap">
+              <input 
+                type="password" 
+                id="forgot-new-pwd" 
+                class="auth-input" 
+                placeholder="At least 8 characters" 
+                autocomplete="new-password" 
+                required 
+              />
+              <button type="button" id="toggle-forgot-new-pwd" class="auth-toggle-pwd" aria-label="Toggle password">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-label" for="forgot-confirm-pwd">Confirm New Password</label>
+            <div class="auth-input-wrap">
+              <input 
+                type="password" 
+                id="forgot-confirm-pwd" 
+                class="auth-input" 
+                placeholder="Confirm new password" 
+                autocomplete="new-password" 
+                required 
+              />
+            </div>
+          </div>
+
+          <button type="submit" id="forgot-new-pwd-submit-btn" class="auth-primary-btn">
+            <span>Reset & Save Password</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Success Modal Dialog -->
+  <div id="auth-success-modal" class="success-screen" role="dialog" aria-modal="true">
+    <div class="success-card">
+      <div class="success-check-circle">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h3 class="success-title">Account Created!</h3>
+      <p id="success-user-name" class="success-subtitle">Welcome to SafarGo!</p>
+    </div>
+  </div>
+
+  <!-- Complete SafarGo Customer App Screen -->
+  <div id="app-screen" class="customer-app-screen" style="display: none;">
+    <!-- Customer Header -->
+    <header class="cust-header">
+      <button type="button" id="cust-btn-menu" class="cust-header-btn" aria-label="Open Navigation Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="15" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="cust-header-brand">
+        <img src="/brand/safargo-logo-horizontal.svg" height="26" alt="SafarGo" />
+      </div>
+
+      <button type="button" id="cust-btn-profile" class="cust-avatar-btn" aria-label="Customer Profile">
+        <div id="cust-user-avatar" class="cust-avatar-circle">
+          <span>U</span>
+        </div>
+      </button>
+    </header>
+
+    <!-- Main Map View Area -->
+    <div class="cust-map-wrapper">
+      <div id="cust-leaflet-map" class="cust-leaflet-map"></div>
+
+      <!-- Floating Map Glass Controls -->
+      <div class="cust-map-controls">
+        <button type="button" id="cust-btn-recenter" class="cust-glass-btn" title="Center Current Location">
+          🎯
+        </button>
+        <div class="cust-zoom-group">
+          <button type="button" id="cust-btn-zoom-in" class="cust-zoom-btn" title="Zoom In">+</button>
+          <div class="cust-zoom-divider"></div>
+          <button type="button" id="cust-btn-zoom-out" class="cust-zoom-btn" title="Zoom Out">−</button>
+        </div>
+      </div>
+
+      <!-- Active Ongoing Ride Floating Ribbon -->
+      <div id="cust-active-ribbon" class="cust-active-ribbon" style="display: none;">
+        <div class="cust-ribbon-pulse"></div>
+        <div class="cust-ribbon-text">
+          <strong>Ongoing Trip Active</strong>
+          <span id="cust-ribbon-status">Status: Searching Drivers</span>
+        </div>
+        <button type="button" id="cust-btn-resume-ride" class="cust-ribbon-btn">View Live Trip →</button>
+      </div>
+    </div>
+
+    <!-- Slide-out Drawer Navigation -->
+    <div id="cust-drawer-overlay" class="cust-drawer-overlay" style="display: none;">
+      <div class="cust-drawer-content">
+        <div class="cust-drawer-profile">
+          <div id="cust-drawer-avatar" class="cust-drawer-avatar-circle">
+            <span>U</span>
+          </div>
+          <h3 id="cust-drawer-name" class="cust-drawer-name">SafarGo Traveler</h3>
+          <p id="cust-drawer-username" class="cust-drawer-user">@user</p>
+          <div class="cust-drawer-rating-pill">⭐ 4.95 • Verified Customer</div>
+        </div>
+
+        <nav class="cust-drawer-menu">
+          <button type="button" id="cust-menu-history" class="cust-drawer-item">
+            <span class="cust-drawer-icon">🕒</span>
+            <span class="cust-drawer-label">Ride History</span>
+            <span class="cust-drawer-arrow">›</span>
+          </button>
+          <button type="button" id="cust-menu-saved" class="cust-drawer-item">
+            <span class="cust-drawer-icon">📍</span>
+            <span class="cust-drawer-label">Saved Places</span>
+            <span class="cust-drawer-arrow">›</span>
+          </button>
+          <button type="button" id="cust-menu-driver-mode" class="cust-drawer-item" style="background: #F0FDF4; border: 1px solid #BBF7D0;">
+            <span class="cust-drawer-icon">🚗</span>
+            <span class="cust-drawer-label" style="color: #15803D; font-weight: 700;">Switch to Driver Mode</span>
+            <span class="cust-drawer-arrow" style="color: #15803D;">›</span>
+          </button>
+          <button type="button" id="cust-menu-support" class="cust-drawer-item">
+            <span class="cust-drawer-icon">💬</span>
+            <span class="cust-drawer-label">Help & Support (24/7)</span>
+            <span class="cust-drawer-arrow">›</span>
+          </button>
+        </nav>
+
+        <div class="cust-drawer-footer">
+          <button type="button" id="cust-btn-logout" class="cust-drawer-logout">
+            Sign Out of SafarGo
+          </button>
+          <p class="cust-drawer-version">SafarGo Mobility v1.0 • Enterprise Monorepo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CUSTOMER BOOKING SHEETS ==================== -->
+
+    <!-- SHEET 1: WHERE TO CARD (Initial Home View) -->
+    <div id="sheet-whereto" class="cust-bottom-sheet active">
+      <div class="cust-sheet-handle"></div>
+      <h2 class="cust-sheet-title">Where are you going today?</h2>
+
+      <button type="button" id="cust-trigger-search" class="cust-search-trigger-btn">
+        <div class="cust-trigger-icon">🔍</div>
+        <div class="cust-trigger-text">
+          <strong>Search destination...</strong>
+          <small id="cust-current-loc-preview">Pickup: Current GPS location</small>
+        </div>
+        <span class="cust-trigger-arrow">→</span>
+      </button>
+
+      <div class="cust-quick-destinations">
+        <button type="button" class="cust-quick-pill" data-name="Airport" data-address="Allama Iqbal International Airport, Lahore" data-lat="31.5216" data-lng="74.4036">
+          <span>✈️</span> Airport
+        </button>
+        <button type="button" class="cust-quick-pill" data-name="Emporium" data-address="Emporium Mall, Johar Town, Lahore" data-lat="31.4682" data-lng="74.2678">
+          <span>🛍️</span> Emporium
+        </button>
+        <button type="button" class="cust-quick-pill" data-name="Packages" data-address="Packages Mall, Walton Road, Lahore" data-lat="31.4746" data-lng="74.3547">
+          <span>🏢</span> Packages
+        </button>
+        <button type="button" class="cust-quick-pill" data-name="Liberty" data-address="Liberty Market, Gulberg III, Lahore" data-lat="31.5126" data-lng="74.3444">
+          <span>🏬</span> Liberty
+        </button>
+      </div>
+    </div>
+
+    <!-- SHEET 2: LOCATION SEARCH SCREEN -->
+    <div id="sheet-search" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <button type="button" class="cust-btn-sheet-back" data-target="sheet-whereto">← Back</button>
+        <h3 class="cust-sheet-subheading">Choose Destination</h3>
+      </div>
+
+      <div class="cust-inputs-box">
+        <div class="cust-input-row">
+          <div class="cust-dot cust-dot-green"></div>
+          <div class="cust-input-wrap">
+            <label class="cust-label">PICKUP FROM</label>
+            <input type="text" id="cust-pickup-input" class="cust-search-input" value="Gulberg III, Lahore" />
+          </div>
+        </div>
+        <div class="cust-connector-line"></div>
+        <div class="cust-input-row">
+          <div class="cust-dot cust-dot-red"></div>
+          <div class="cust-input-wrap">
+            <label class="cust-label">WHERE TO</label>
+            <input type="text" id="cust-dest-input" class="cust-search-input" placeholder="Search landmark, mall, or street..." autofocus />
+          </div>
+        </div>
+      </div>
+
+      <div id="cust-search-results" class="cust-results-list">
+        <p class="cust-results-heading">Suggested Places</p>
+        <div id="cust-results-items" class="cust-results-items"></div>
+      </div>
+    </div>
+
+    <!-- SHEET 3: ROUTE PREVIEW -->
+    <div id="sheet-route" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <button type="button" class="cust-btn-sheet-back" data-target="sheet-search">← Edit Destination</button>
+        <h3 class="cust-sheet-subheading">Route Details</h3>
+      </div>
+
+      <div class="cust-route-summary-box">
+        <div class="cust-route-row">
+          <span class="cust-dot cust-dot-green"></span>
+          <span id="cust-route-pickup-text" class="cust-route-addr">Pickup Location</span>
+        </div>
+        <div class="cust-connector-line" style="height: 14px;"></div>
+        <div class="cust-route-row">
+          <span class="cust-dot cust-dot-red"></span>
+          <span id="cust-route-dest-text" class="cust-route-addr">Destination</span>
+        </div>
+      </div>
+
+      <div class="cust-metrics-row">
+        <div class="cust-metric-card">
+          <span class="cust-metric-icon">🛣️</span>
+          <div>
+            <small>Estimated Distance</small>
+            <strong id="cust-route-distance">4.8 km</strong>
+          </div>
+        </div>
+        <div class="cust-metric-card">
+          <span class="cust-metric-icon">⏱️</span>
+          <div>
+            <small>Travel Time</small>
+            <strong id="cust-route-duration">14 mins</strong>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" id="cust-btn-to-vehicle" class="cust-primary-action-btn">
+        Choose Ride →
+      </button>
+    </div>
+
+    <!-- SHEET 4: VEHICLE SELECTION (BIKE vs CAR) -->
+    <div id="sheet-vehicle" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <button type="button" class="cust-btn-sheet-back" data-target="sheet-route">← Back</button>
+        <h3 class="cust-sheet-subheading">Choose Your Ride</h3>
+      </div>
+
+      <div class="cust-vehicle-options">
+        <!-- Bike Card -->
+        <div class="cust-vehicle-card active" data-vtype="BIKE">
+          <div class="cust-vehicle-icon-box" style="background: #DCFCE7;">
+            <span style="font-size: 26px;">🏍️</span>
+          </div>
+          <div class="cust-vehicle-info">
+            <div class="cust-v-title-row">
+              <strong>SafarGo Bike</strong>
+              <span class="cust-eta-pill">~3 min away</span>
+            </div>
+            <p>Fastest single passenger ride through traffic</p>
+            <strong id="cust-bike-fare" class="cust-v-fare">PKR 240 - 290</strong>
+          </div>
+          <div class="cust-v-radio">✓</div>
+        </div>
+
+        <!-- Car Card -->
+        <div class="cust-vehicle-card" data-vtype="CAR">
+          <div class="cust-vehicle-icon-box" style="background: #EFF6FF;">
+            <span style="font-size: 26px;">🚗</span>
+          </div>
+          <div class="cust-vehicle-info">
+            <div class="cust-v-title-row">
+              <strong>SafarGo Car</strong>
+              <span class="cust-eta-pill" style="background: #DBEAFE; color: #1D4ED8;">~5 min away</span>
+            </div>
+            <p>Air-conditioned comfort with generous trunk space</p>
+            <strong id="cust-car-fare" class="cust-v-fare">PKR 600 - 720</strong>
+          </div>
+          <div class="cust-v-radio"></div>
+        </div>
+      </div>
+
+      <button type="button" id="cust-btn-dispatch" class="cust-primary-action-btn">
+        Find Drivers Now →
+      </button>
+    </div>
+
+    <!-- SHEET 5: DRIVERS ARE RESPONDING (LIVE BIDDING) -->
+    <div id="sheet-offers" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <h3 class="cust-sheet-subheading">Drivers Are Responding</h3>
+        <button type="button" id="cust-btn-cancel-request" class="cust-btn-danger-outline">Cancel</button>
+      </div>
+
+      <div class="cust-radar-banner">
+        <div class="cust-radar-pulse"></div>
+        <div class="cust-radar-info">
+          <strong>Broadcasting to Nearby Verified Drivers</strong>
+          <small>Reviewing your route. Incoming offers update in real time.</small>
+        </div>
+      </div>
+
+      <div id="cust-offers-list" class="cust-offers-container">
+        <!-- Live offers dynamically inject here -->
+      </div>
+    </div>
+
+    <!-- SHEET 6: DEAL CHAT & FARE NEGOTIATION -->
+    <div id="sheet-chat" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <button type="button" class="cust-btn-sheet-back" data-target="sheet-offers">← Back to Offers</button>
+        <div class="cust-chat-driver-header">
+          <strong id="cust-chat-driver-name">Driver Tariq</strong>
+          <small id="cust-chat-vehicle">Honda CD 70</small>
+        </div>
+        <div class="cust-current-fare-tag">
+          <small>Current</small>
+          <strong id="cust-chat-current-fare">PKR 250</strong>
+        </div>
+      </div>
+
+      <div id="cust-chat-messages" class="cust-chat-messages-box">
+        <!-- Chat messages dynamically inject here -->
+      </div>
+
+      <!-- Quick Counter Offer Buttons -->
+      <div class="cust-counter-bar">
+        <small>Counter Offer:</small>
+        <button type="button" class="cust-counter-pill" data-delta="-20">- PKR 20</button>
+        <button type="button" class="cust-counter-pill" data-delta="+20">+ PKR 20</button>
+        <button type="button" class="cust-counter-pill" data-pct="0.9" style="background: #DCFCE7; color: #15803D;">-10%</button>
+      </div>
+
+      <button type="button" id="cust-btn-accept-fare" class="cust-primary-action-btn" style="margin-bottom: 8px;">
+        Accept Fare: PKR 250 →
+      </button>
+
+      <div class="cust-chat-input-bar">
+        <input type="text" id="cust-chat-input" class="cust-chat-text-input" placeholder="Type a message to driver..." />
+        <button type="button" id="cust-btn-send-msg" class="cust-chat-send-btn">↑</button>
+      </div>
+    </div>
+
+    <!-- SHEET 7: CONFIRMATION & PAYMENT -->
+    <div id="sheet-payment" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <h3 class="cust-sheet-subheading">Ride Confirmation</h3>
+      </div>
+
+      <div class="cust-deal-confirmed-banner">
+        <span style="font-size: 24px;">🎉</span>
+        <div>
+          <strong style="color: #15803D;">Fare Agreed & Locked</strong>
+          <p id="cust-locked-fare-text" style="color: #166534; font-size: 13px;">PKR 250 Total Ride Price</p>
+        </div>
+      </div>
+
+      <div class="cust-driver-summary-card">
+        <div id="cust-confirm-driver-avatar" class="cust-vehicle-icon-box" style="background: #DCFCE7;">
+          <span>🏍️</span>
+        </div>
+        <div style="flex: 1;">
+          <strong id="cust-confirm-driver-name">Driver Tariq</strong>
+          <p id="cust-confirm-driver-vehicle">Honda CD 70 (LE-21-4890)</p>
+        </div>
+        <div class="cust-eta-pill">⭐ 4.9</div>
+      </div>
+
+      <div class="cust-payment-methods">
+        <label class="cust-payment-card active">
+          <input type="radio" name="cust_pay_method" value="CASH" checked style="display: none;" />
+          <span style="font-size: 22px;">💵</span>
+          <div style="flex: 1;">
+            <strong>Cash on Arrival</strong>
+            <small>Pay exact cash to driver upon completing journey</small>
+          </div>
+          <span class="cust-v-radio">✓</span>
+        </label>
+
+        <label class="cust-payment-card">
+          <input type="radio" name="cust_pay_method" value="DIGITAL" style="display: none;" />
+          <span style="font-size: 22px;">💳</span>
+          <div style="flex: 1;">
+            <strong>Digital Wallet / Card</strong>
+            <small>Instant secure cashless transaction</small>
+          </div>
+          <span class="cust-v-radio"></span>
+        </label>
+      </div>
+
+      <button type="button" id="cust-btn-confirm-booking" class="cust-primary-action-btn">
+        Confirm & Dispatch Driver →
+      </button>
+    </div>
+
+    <!-- SHEET 8: LIVE RIDE GPS TRACKING -->
+    <div id="sheet-live" class="cust-bottom-sheet" style="display: none;">
+      <div class="cust-sheet-header-row">
+        <div>
+          <h3 id="cust-live-trip-title" class="cust-sheet-subheading">Driver is On The Way</h3>
+          <small id="cust-live-otp-banner" style="color: #16A34A; font-weight: 800;">
+            PIN: <span id="cust-live-pin">4821</span> (Share with driver to start ride)
+          </small>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" id="cust-btn-share-trip" class="cust-small-pill-btn">Share</button>
+          <button type="button" id="cust-btn-sos" class="cust-small-pill-btn" style="background: #FEE2E2; color: #DC2626; border-color: #FECACA;">SOS</button>
+        </div>
+      </div>
+
+      <div class="cust-live-driver-box">
+        <div class="cust-vehicle-icon-box" style="background: #DCFCE7;">
+          <span id="cust-live-vehicle-emoji">🏍️</span>
+        </div>
+        <div style="flex: 1;">
+          <strong id="cust-live-driver-name">Driver Tariq</strong>
+          <p id="cust-live-driver-vehicle">Honda CD 70</p>
+          <span id="cust-live-plate-badge" class="cust-plate-badge">Plate: LE-21-4890</span>
+        </div>
+        <div style="text-align: right;">
+          <small style="color: #64748B;">Agreed Fare</small>
+          <strong id="cust-live-agreed-fare" style="font-size: 18px; color: #16A34A; display: block;">PKR 250</strong>
+        </div>
+      </div>
+
+      <div class="cust-live-actions-row">
+        <button type="button" id="cust-btn-open-chat" class="cust-action-secondary-btn">
+          💬 Message Driver
+        </button>
+        <button type="button" id="cust-btn-call-driver" class="cust-action-secondary-btn">
+          📞 Call Driver
+        </button>
+      </div>
+
+      <!-- Demo Simulator Controls to Test Real-time Driver Journey -->
+      <div class="cust-driver-sim-bar">
+        <small style="color: #64748B; font-weight: 700;">Simulate Driver Action:</small>
+        <button type="button" id="sim-driver-arrived" class="cust-sim-step-btn">Driver Arrived</button>
+        <button type="button" id="sim-ride-start" class="cust-sim-step-btn">Start Ride</button>
+        <button type="button" id="sim-ride-complete" class="cust-sim-step-btn" style="background: #16A34A; color: white;">Complete</button>
+      </div>
+    </div>
+
+    <!-- SHEET 9: RIDE COMPLETED & RATING -->
+    <div id="sheet-complete" class="cust-bottom-sheet" style="display: none;">
+      <div style="text-align: center; padding: 10px 0 16px;">
+        <div class="cust-complete-check-circle">✓</div>
+        <h2 style="font-size: 22px; font-weight: 900; color: #0F172A;">Ride Completed!</h2>
+        <p style="font-size: 13px; color: #64748B; margin-top: 2px;">Thank you for riding safely with SafarGo.</p>
+      </div>
+
+      <div class="cust-receipt-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="color: #64748B; font-weight: 600;">Total Fare</span>
+          <strong id="cust-receipt-fare" style="font-size: 22px; color: #16A34A; font-weight: 900;">PKR 250</strong>
+        </div>
+        <div style="display: flex; justify-content: space-around; border-top: 1px solid #E2E8F0; padding-top: 10px;">
+          <div><small style="color: #64748B;">Distance</small><strong id="cust-receipt-dist" style="display: block;">4.8 km</strong></div>
+          <div><small style="color: #64748B;">Duration</small><strong id="cust-receipt-dur" style="display: block;">14 mins</strong></div>
+          <div><small style="color: #64748B;">Payment</small><strong style="display: block; color: #15803D;">Paid Cash</strong></div>
+        </div>
+      </div>
+
+      <div class="cust-rating-box">
+        <p style="font-size: 13px; font-weight: 700; color: #0F172A; text-align: center; margin-bottom: 8px;">
+          How was your experience with <span id="cust-rated-driver-name">Driver Tariq</span>?
+        </p>
+        <div id="cust-stars-row" class="cust-stars-row">
+          <span class="cust-star active" data-val="1">★</span>
+          <span class="cust-star active" data-val="2">★</span>
+          <span class="cust-star active" data-val="3">★</span>
+          <span class="cust-star active" data-val="4">★</span>
+          <span class="cust-star active" data-val="5">★</span>
+        </div>
+        <textarea id="cust-review-comment" class="cust-review-textarea" placeholder="Write an optional review (clean vehicle, polite driver)..."></textarea>
+      </div>
+
+      <button type="button" id="cust-btn-finish-review" class="cust-primary-action-btn">
+        Submit & Return Home
+      </button>
+    </div>
+
+    <!-- MODAL: RIDE HISTORY -->
+    <div id="modal-cust-history" class="cust-full-modal" style="display: none;">
+      <div class="cust-modal-header">
+        <button type="button" class="cust-btn-modal-close" data-close="modal-cust-history">←</button>
+        <h3>Your Ride History</h3>
+      </div>
+      <div class="cust-history-tabs">
+        <button type="button" class="cust-tab-btn active" data-filter="all">All</button>
+        <button type="button" class="cust-tab-btn" data-filter="completed">Completed</button>
+        <button type="button" class="cust-tab-btn" data-filter="cancelled">Cancelled</button>
+      </div>
+      <div id="cust-history-list" class="cust-history-list-box"></div>
+    </div>
+
+    <!-- MODAL: SAVED PLACES -->
+    <div id="modal-cust-saved" class="cust-full-modal" style="display: none;">
+      <div class="cust-modal-header">
+        <button type="button" class="cust-btn-modal-close" data-close="modal-cust-saved">←</button>
+        <h3>Saved Places</h3>
+      </div>
+      <div style="padding: 16px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="cust-saved-label" class="cust-search-input" placeholder="Label (Home, Work)..." style="width: 35%;" />
+          <input type="text" id="cust-saved-addr" class="cust-search-input" placeholder="Address..." style="flex: 1;" />
+          <button type="button" id="cust-btn-save-place" class="cust-primary-action-btn" style="padding: 0 14px; width: auto; font-size: 13px;">Save</button>
+        </div>
+        <div id="cust-saved-places-list" class="cust-saved-places-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ============================================================
+       POST-ACCOUNT ONBOARDING: ROLE SELECTION SCREEN
+       ============================================================ -->
+  <div id="role-selection-screen" class="onboarding-flow-screen hidden" style="display: none;" aria-label="Role Selection">
+    <div class="flow-container">
+      <header class="flow-header">
+        <img src="/brand/safargo-logo-horizontal.svg" alt="SafarGo" class="flow-brand-logo" />
+        <span class="flow-step-badge">Get Started</span>
+      </header>
+
+      <div class="flow-title-area">
+        <h1 class="flow-main-title">How will you use SafarGo?</h1>
+        <p class="flow-subtitle">Choose how you want to use SafarGo.</p>
+      </div>
+
+      <div class="role-cards-grid">
+        <!-- Customer Role Card -->
+        <button id="role-card-customer" class="role-choice-card" type="button" aria-label="Choose Customer Role">
+          <div class="role-card-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="role-card-text">
+            <div class="role-card-title">
+              <span>Customer</span>
+              <span class="role-card-arrow">→</span>
+            </div>
+            <p class="role-card-desc">Book rides, choose your preferred fare, and track your journey.</p>
+          </div>
+        </button>
+
+        <!-- Driver Role Card -->
+        <button id="role-card-driver" class="role-choice-card" type="button" aria-label="Choose Driver Role">
+          <div class="role-card-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="m4.93 4.93 4.24 4.24"></path>
+              <path d="m14.83 9.17 4.24-4.24"></path>
+              <path d="M12 2v3"></path>
+              <path d="M12 19v3"></path>
+            </svg>
+          </div>
+          <div class="role-card-text">
+            <div class="role-card-title">
+              <span>Driver</span>
+              <span class="role-card-arrow">→</span>
+            </div>
+            <p class="role-card-desc">Offer rides, receive bookings, and earn with SafarGo.</p>
+          </div>
+        </button>
+      </div>
+
+      <div style="margin-top: auto; text-align: center; font-size: 0.8rem; color: #94A3B8;">
+        <span>You can switch between Customer and Driver modes at any time.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       DRIVER ONBOARDING MULTI-STEP FLOW SCREEN
+       ============================================================ -->
+  <div id="driver-onboarding-screen" class="onboarding-flow-screen hidden" style="display: none;" aria-label="Driver Onboarding">
+    <div class="flow-container">
+      <header class="flow-header">
+        <img src="/brand/safargo-logo-horizontal.svg" alt="SafarGo" class="flow-brand-logo" />
+        <span id="flow-step-badge" class="flow-step-badge">Step 1 of 6</span>
+      </header>
+
+      <!-- Stepper Progress Bar -->
+      <div class="flow-stepper" aria-hidden="true">
+        <div class="stepper-bar-segment active"></div>
+        <div class="stepper-bar-segment"></div>
+        <div class="stepper-bar-segment"></div>
+        <div class="stepper-bar-segment"></div>
+        <div class="stepper-bar-segment"></div>
+        <div class="stepper-bar-segment"></div>
+      </div>
+      <div class="stepper-labels" aria-hidden="true">
+        <span class="active">Info</span>
+        <span>Identity</span>
+        <span>License</span>
+        <span>Vehicle</span>
+        <span>Photo</span>
+        <span>Review</span>
+      </div>
+
+      <!-- STEP 0: VEHICLE SELECTION -->
+      <div id="step-view-vehicle" style="display: flex; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Choose Your Vehicle</h2>
+          <p class="flow-subtitle">Select the vehicle you want to use for providing rides.</p>
+        </div>
+
+        <div class="vehicle-cards-grid">
+          <!-- Bike Card -->
+          <div id="veh-card-bike" class="vehicle-select-card selected" role="button" tabindex="0">
+            <div class="vehicle-check-badge">✓</div>
+            <div class="vehicle-card-icon-wrap">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18.5" cy="17.5" r="3.5"></circle>
+                <circle cx="5.5" cy="17.5" r="3.5"></circle>
+                <circle cx="15" cy="5" r="1"></circle>
+                <path d="M12 17.5V14l-3-3 4-3 2 3h2"></path>
+              </svg>
+            </div>
+            <h3 class="vehicle-card-title">Bike</h3>
+            <p class="vehicle-card-desc">Provide fast and affordable bike rides.</p>
+          </div>
+
+          <!-- Car Card -->
+          <div id="veh-card-car" class="vehicle-select-card" role="button" tabindex="0">
+            <div class="vehicle-check-badge">✓</div>
+            <div class="vehicle-card-icon-wrap">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2"></path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <path d="M9 17h6"></path>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+            </div>
+            <h3 class="vehicle-card-title">Car</h3>
+            <p class="vehicle-card-desc">Provide comfortable rides by car.</p>
+          </div>
+        </div>
+
+        <button id="veh-step-btn" class="flow-primary-btn" type="button">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 1: PERSONAL INFORMATION -->
+      <div id="step-view-info" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Driver Information</h2>
+          <p class="flow-subtitle">Tell us a little about yourself.</p>
+        </div>
+
+        <div class="flow-form-group">
+          <label class="flow-label" for="driver-info-name">Full Name</label>
+          <div class="flow-input-wrap">
+            <svg class="flow-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input id="driver-info-name" class="flow-input" type="text" placeholder="e.g. Muhammad Ali" required />
+          </div>
+        </div>
+
+        <div class="flow-form-group">
+          <label class="flow-label" for="driver-info-phone">Phone Number</label>
+          <div class="flow-input-wrap">
+            <svg class="flow-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input id="driver-info-phone" class="flow-input" type="tel" placeholder="+923001234567" required />
+          </div>
+        </div>
+
+        <div class="flow-form-group">
+          <label class="flow-label" for="driver-info-email">Email Address</label>
+          <div class="flow-input-wrap">
+            <svg class="flow-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input id="driver-info-email" class="flow-input" type="email" placeholder="name@example.com" required />
+          </div>
+        </div>
+
+        <div id="driver-info-error" class="flow-error-msg" role="alert"></div>
+
+        <button id="driver-info-btn" class="flow-primary-btn" type="button" style="margin-top: 24px;">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 2: CNIC DOCUMENT VERIFICATION -->
+      <div id="step-view-cnic" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Verify Your Identity</h2>
+          <p class="flow-subtitle">Upload clear photos of both sides of your CNIC.</p>
+        </div>
+
+        <!-- CNIC Front Card -->
+        <div id="cnic-front-card" class="upload-card-wrapper">
+          <div class="upload-card-header">
+            <div class="upload-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2"/><path d="M15 12h2"/><path d="M7 16h10"/></svg>
+              <span>CNIC Front Side</span>
+            </div>
+            <span id="cnic-front-chip" class="upload-status-chip">Required</span>
+          </div>
+
+          <input id="cnic-front-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/jpg" capture="environment" style="display: none;" />
+
+          <div class="upload-action-btns">
+            <button id="cnic-front-trigger" class="upload-btn-secondary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload / Camera</span>
+            </button>
+          </div>
+
+          <div id="cnic-front-preview-box" class="upload-preview-container" style="margin-top: 12px;">
+            <img id="cnic-front-preview-img" class="upload-preview-image" alt="CNIC Front Preview" />
+            <div class="upload-preview-actions">
+              <button id="cnic-front-remove" class="upload-remove-btn" type="button">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CNIC Back Card -->
+        <div id="cnic-back-card" class="upload-card-wrapper">
+          <div class="upload-card-header">
+            <div class="upload-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>
+              <span>CNIC Back Side</span>
+            </div>
+            <span id="cnic-back-chip" class="upload-status-chip">Required</span>
+          </div>
+
+          <input id="cnic-back-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/jpg" capture="environment" style="display: none;" />
+
+          <div class="upload-action-btns">
+            <button id="cnic-back-trigger" class="upload-btn-secondary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload / Camera</span>
+            </button>
+          </div>
+
+          <div id="cnic-back-preview-box" class="upload-preview-container" style="margin-top: 12px;">
+            <img id="cnic-back-preview-img" class="upload-preview-image" alt="CNIC Back Preview" />
+            <div class="upload-preview-actions">
+              <button id="cnic-back-remove" class="upload-remove-btn" type="button">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="cnic-error-msg" class="flow-error-msg" role="alert"></div>
+
+        <button id="cnic-next-btn" class="flow-primary-btn" type="button" style="margin-top: 20px;">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 3: DRIVING LICENSE -->
+      <div id="step-view-license" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Driving License</h2>
+          <p class="flow-subtitle">Provide your valid driving license details.</p>
+        </div>
+
+        <div class="flow-form-group">
+          <label class="flow-label" for="license-number-input">License Number</label>
+          <div class="flow-input-wrap">
+            <input id="license-number-input" class="flow-input no-icon" type="text" placeholder="Enter license number (e.g. DL-98214-LHR)" required />
+          </div>
+        </div>
+
+        <!-- License Image Card -->
+        <div id="license-card" class="upload-card-wrapper">
+          <div class="upload-card-header">
+            <div class="upload-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/></svg>
+              <span>License Photo</span>
+            </div>
+            <span id="license-chip" class="upload-status-chip">Required</span>
+          </div>
+
+          <input id="license-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/jpg" capture="environment" style="display: none;" />
+
+          <div class="upload-action-btns">
+            <button id="license-trigger" class="upload-btn-secondary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload License Photo</span>
+            </button>
+          </div>
+
+          <div id="license-preview-box" class="upload-preview-container" style="margin-top: 12px;">
+            <img id="license-preview-img" class="upload-preview-image" alt="License Preview" />
+            <div class="upload-preview-actions">
+              <button id="license-remove" class="upload-remove-btn" type="button">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="license-error-msg" class="flow-error-msg" role="alert"></div>
+
+        <button id="license-next-btn" class="flow-primary-btn" type="button" style="margin-top: 20px;">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 4: VEHICLE DETAILS -->
+      <div id="step-view-veh-details" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <div id="veh-type-badge" class="flow-step-badge" style="display: inline-block; margin-bottom: 10px;">Vehicle Type: Bike</div>
+          <h2 id="veh-details-title" class="flow-main-title">Bike Details</h2>
+          <p class="flow-subtitle">Provide your vehicle registration and number plate photo.</p>
+        </div>
+
+        <div class="flow-form-group">
+          <label class="flow-label" for="veh-plate-input">Registration / Number Plate</label>
+          <div class="flow-input-wrap">
+            <input id="veh-plate-input" class="flow-input no-icon" type="text" placeholder="e.g. LEA-2024 or ICT-4890" required />
+          </div>
+        </div>
+
+        <!-- Plate Image Card -->
+        <div id="plate-card" class="upload-card-wrapper">
+          <div class="upload-card-header">
+            <div class="upload-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+              <span>Number Plate Photo</span>
+            </div>
+            <span id="plate-chip" class="upload-status-chip">Required</span>
+          </div>
+
+          <input id="plate-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/jpg" capture="environment" style="display: none;" />
+
+          <div class="upload-action-btns">
+            <button id="plate-trigger" class="upload-btn-secondary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload Plate Photo</span>
+            </button>
+          </div>
+
+          <div id="plate-preview-box" class="upload-preview-container" style="margin-top: 12px;">
+            <img id="plate-preview-img" class="upload-preview-image" alt="Number Plate Preview" />
+            <div class="upload-preview-actions">
+              <button id="plate-remove" class="upload-remove-btn" type="button">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="veh-details-error" class="flow-error-msg" role="alert"></div>
+
+        <button id="veh-details-btn" class="flow-primary-btn" type="button" style="margin-top: 20px;">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 5: DRIVER PROFILE PHOTO -->
+      <div id="step-view-photo" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Driver Profile Photo</h2>
+          <p class="flow-subtitle">Upload a clear photo so customers can recognize you.</p>
+        </div>
+
+        <div class="profile-photo-circle-box">
+          <div class="profile-photo-circle">
+            <div id="driver-photo-placeholder" class="profile-photo-circle-placeholder">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span style="font-size: 0.75rem; font-weight: 600;">No Photo</span>
+            </div>
+            <img id="driver-photo-preview-img" style="display: none;" alt="Driver Profile Preview" />
+          </div>
+
+          <input id="driver-photo-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/jpg" capture="user" style="display: none;" />
+
+          <button id="driver-photo-trigger" class="upload-btn-secondary" type="button" style="max-width: 220px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Take / Choose Photo</span>
+          </button>
+        </div>
+
+        <div style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: 14px; padding: 14px; margin-bottom: 24px; font-size: 0.82rem; color: #166534; line-height: 1.5;">
+          <strong>Photo Requirements:</strong><br/>
+          • Front-facing selfie with good lighting<br/>
+          • Eyes visible without sunglasses or hats<br/>
+          • Sharp and in focus for rider security
+        </div>
+
+        <div id="driver-photo-error" class="flow-error-msg" role="alert"></div>
+
+        <button id="driver-photo-btn" class="flow-primary-btn" type="button">
+          <span>Continue</span>
+        </button>
+      </div>
+
+      <!-- STEP 6: REVIEW & SUBMIT -->
+      <div id="step-view-review" style="display: none; flex-direction: column; width: 100%; flex: 1;">
+        <div class="flow-title-area">
+          <h2 class="flow-main-title">Review Your Information</h2>
+          <p class="flow-subtitle">Please check your details before submitting for verification.</p>
+        </div>
+
+        <!-- Section: Personal Info -->
+        <div class="review-section-card">
+          <div class="review-section-header">
+            <span class="review-section-title">Personal Information</span>
+            <button class="review-edit-btn" data-edit-step="1" type="button">Edit</button>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Full Name</span>
+            <span id="review-val-name" class="review-data-value">—</span>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Phone</span>
+            <span id="review-val-phone" class="review-data-value">—</span>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Email</span>
+            <span id="review-val-email" class="review-data-value">—</span>
+          </div>
+        </div>
+
+        <!-- Section: Vehicle -->
+        <div class="review-section-card">
+          <div class="review-section-header">
+            <span class="review-section-title">Vehicle</span>
+            <button class="review-edit-btn" data-edit-step="4" type="button">Edit</button>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Vehicle Type</span>
+            <span id="review-val-veh-type" class="review-data-value">—</span>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Number Plate</span>
+            <span id="review-val-plate" class="review-data-value">—</span>
+          </div>
+        </div>
+
+        <!-- Section: Identity -->
+        <div class="review-section-card">
+          <div class="review-section-header">
+            <span class="review-section-title">Identity</span>
+            <button class="review-edit-btn" data-edit-step="2" type="button">Edit</button>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">CNIC Front</span>
+            <span id="review-val-cnic-front" class="review-data-value">Uploaded ✓</span>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">CNIC Back</span>
+            <span id="review-val-cnic-back" class="review-data-value">Uploaded ✓</span>
+          </div>
+        </div>
+
+        <!-- Section: License -->
+        <div class="review-section-card">
+          <div class="review-section-header">
+            <span class="review-section-title">License</span>
+            <button class="review-edit-btn" data-edit-step="3" type="button">Edit</button>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">License Number</span>
+            <span id="review-val-license-num" class="review-data-value">—</span>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">License Image</span>
+            <span id="review-val-license-img" class="review-data-value">Uploaded ✓</span>
+          </div>
+        </div>
+
+        <!-- Section: Profile Photo -->
+        <div class="review-section-card">
+          <div class="review-section-header">
+            <span class="review-section-title">Profile</span>
+            <button class="review-edit-btn" data-edit-step="5" type="button">Edit</button>
+          </div>
+          <div class="review-data-row">
+            <span class="review-data-label">Profile Photo</span>
+            <span id="review-val-photo" class="review-data-value">Uploaded ✓</span>
+          </div>
+        </div>
+
+        <!-- Confirmation Checkbox -->
+        <label class="review-checkbox-card">
+          <input id="review-confirm-checkbox" type="checkbox" required />
+          <span class="review-checkbox-label">
+            I confirm that the information and documents I provided are accurate and belong to me.
+          </span>
+        </label>
+
+        <div id="review-error-msg" class="flow-error-msg" role="alert"></div>
+
+        <button id="review-submit-btn" class="flow-primary-btn" type="button" style="margin-top: 10px;">
+          <span>Submit for Verification</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       DRIVER VERIFICATION STATUS SCREEN (Pending, Rejected, Suspended)
+       ============================================================ -->
+  <div id="driver-status-screen" class="onboarding-flow-screen hidden" style="display: none;" aria-label="Verification Status">
+    <div class="flow-container">
+      <header class="flow-header">
+        <img src="/brand/safargo-logo-horizontal.svg" alt="SafarGo" class="flow-brand-logo" />
+      </header>
+
+      <div class="status-hero-card">
+        <div id="status-chip" class="status-badge-chip pending">Pending Verification</div>
+        <h2 id="status-main-title" class="flow-main-title">Verification Submitted</h2>
+        <p id="status-main-desc" class="flow-subtitle">
+          Your driver application has been submitted successfully. Our team will review your information and documents.
+        </p>
+
+        <!-- Rejection Card (Hidden unless status == REJECTED) -->
+        <div id="status-rejection-card" style="display: none; background: #FEF2F2; border: 1.5px solid #FCA5A5; border-radius: 14px; padding: 16px; margin: 20px 0; text-align: left;">
+          <strong style="color: #991B1B; font-size: 0.9rem;">Reason for Rejection:</strong>
+          <p id="status-rejection-reason" style="color: #B91C1C; font-size: 0.85rem; margin-top: 4px; line-height: 1.45;"></p>
+        </div>
+
+        <button id="status-resubmit-btn" class="flow-primary-btn" type="button" style="display: none; margin: 16px 0;">
+          <span>Update Information & Resubmit</span>
+        </button>
+
+        <!-- Verification Timeline -->
+        <div class="status-timeline">
+          <div class="timeline-step">
+            <div class="timeline-icon-wrap done">✓</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Application Submitted</div>
+              <div class="timeline-desc">All required documents & details uploaded</div>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-icon-wrap active">●</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Compliance Verification</div>
+              <div class="timeline-desc">Our team is reviewing your CNIC, license & vehicle details</div>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-icon-wrap pending">3</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Account Activation</div>
+              <div class="timeline-desc">Start receiving ride requests and earning fares</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Admin Verification Status Box -->
+        <div id="pending-approval-box" style="margin-top: 24px; padding: 20px; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 18px; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; display: inline-block;"></span>
+            <strong style="font-size: 0.95rem; color: #0F172A;">Awaiting Admin Approval</strong>
+          </div>
+          <p style="font-size: 0.82rem; color: #64748B; margin-bottom: 14px; line-height: 1.5;">
+            Your vehicle details and documents are undergoing official verification in the SafarGo Admin Console. Your driver portal will unlock automatically once approved.
+          </p>
+          <button id="check-approval-btn" class="upload-btn-secondary" type="button" style="width: 100%; height: 44px; margin-bottom: 8px;">
+            <span>Check Approval Status</span>
+          </button>
+          <div style="font-size: 0.75rem; color: #94A3B8;">
+            Auto-checking approval in real-time...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       APPROVED DRIVER DASHBOARD
+       ============================================================ -->
+  <div id="driver-dashboard-screen" class="onboarding-flow-screen hidden" style="display: none;" aria-label="Driver Dashboard">
+    <div class="flow-container" style="padding-top: 0;">
+      <!-- Driver Top Bar -->
+      <header class="driver-dashboard-header">
+        <div>
+          <span style="font-size: 0.72rem; font-weight: 800; color: #16A34A; text-transform: uppercase; letter-spacing: 0.05em;">SafarGo Driver</span>
+          <h3 id="dash-driver-name" style="font-size: 1.1rem; font-weight: 800; color: #0F172A;">Driver Portal</h3>
+          <span id="dash-driver-veh" style="font-size: 0.76rem; color: #64748B;">Honda CD70 • Verified</span>
+        </div>
+        <div id="driver-status-toggle" class="driver-online-switch online" role="button" tabindex="0">
+          <span class="driver-online-dot"></span>
+          <span id="driver-status-label">Online</span>
+        </div>
+      </header>
+
+      <div style="padding: 18px 0;">
+        <!-- Metrics Grid -->
+        <div class="driver-metrics-grid">
+          <div class="driver-metric-card">
+            <span class="driver-metric-num">PKR 4,850</span>
+            <span class="driver-metric-label">Today's Earnings</span>
+          </div>
+          <div class="driver-metric-card">
+            <span class="driver-metric-num">6</span>
+            <span class="driver-metric-label">Completed Rides</span>
+          </div>
+          <div class="driver-metric-card">
+            <span class="driver-metric-num">4.95 ★</span>
+            <span class="driver-metric-label">Driver Rating</span>
+          </div>
+          <div class="driver-metric-card">
+            <span class="driver-metric-num">98%</span>
+            <span class="driver-metric-label">Acceptance Rate</span>
+          </div>
+        </div>
+
+        <!-- Live Ride Request Dispatcher -->
+        <div id="driver-ride-request-card" class="driver-incoming-ride-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 0.78rem; font-weight: 800; color: #16A34A; background: #DCFCE7; padding: 4px 10px; border-radius: 20px;">NEW RIDE REQUEST</span>
+            <span class="driver-ride-fare-badge">PKR 650</span>
+          </div>
+
+          <div style="margin-bottom: 14px; font-size: 0.9rem;">
+            <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+              <span style="color: #16A34A;">●</span>
+              <strong>Pickup:</strong> <span>Mall of Lahore, Cantt</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <span style="color: #EF4444;">■</span>
+              <strong>Dropoff:</strong> <span>Gulberg III, Main Boulevard</span>
+            </div>
+            <div style="margin-top: 6px; font-size: 0.8rem; color: #64748B;">Distance: 4.8 km • Passenger: Fatima Z. (4.9 ★)</div>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button id="driver-accept-ride-btn" class="flow-primary-btn" type="button" style="height: 44px; margin-top: 0; flex: 2;">
+              <span>Accept Ride</span>
+            </button>
+            <button id="driver-decline-ride-btn" class="upload-btn-secondary" type="button" style="height: 44px; flex: 1;">
+              <span>Decline</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Ride Progression Card (Hidden initially) -->
+        <div id="driver-active-ride-card" style="display: none; background: #F0FDF4; border: 2px solid #16A34A; border-radius: 20px; padding: 20px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: #15803D;">ACTIVE RIDE IN PROGRESS</span>
+            <span style="font-weight: 800; color: #15803D;">PKR 650</span>
+          </div>
+          <p id="active-ride-status-text" style="font-size: 0.88rem; color: #166534; margin-bottom: 16px; font-weight: 600;">
+            Heading to pickup location (1.2 km away)
+          </p>
+          <button id="active-ride-action-btn" class="flow-primary-btn" type="button" style="height: 46px;">
+            <span>I have Arrived</span>
+          </button>
+        </div>
+
+        <button id="switch-to-customer-btn" class="upload-btn-secondary" type="button" style="width: 100%; height: 48px; margin-top: 10px;">
+          <span>Switch to Customer App</span>
+        </button>
+        <button id="driver-logout-btn" class="upload-btn-secondary" type="button" style="width: 100%; height: 44px; margin-top: 8px; border-color: #fecaca; color: #ef4444; background: transparent;">
+          <span>Sign Out of Driver Account</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

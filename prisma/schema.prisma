@@ -1,0 +1,304 @@
+// SafarGo - Enterprise Database Architecture
+// PostgreSQL Database Schema via Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  DRIVER
+  ADMIN
+  SUPERADMIN
+}
+
+enum DriverVerificationStatus {
+  INCOMPLETE
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DriverDocumentType {
+  CNIC
+  LICENSE
+  NUMBER_PLATE
+  PROFILE_PHOTO
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum RideStatus {
+  REQUESTED
+  OFFERS_PENDING
+  ACCEPTED
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum VehicleType {
+  BIKE
+  CAR
+  CAR_STANDARD
+  CAR_COMFORT
+  PARCEL_DELIVERY
+}
+
+model User {
+  id               String          @id @default(uuid())
+  fullName         String
+  email            String          @unique
+  phone            String          @unique
+  username         String          @unique
+  passwordHash     String
+  avatarUrl        String?
+  isVerified       Boolean         @default(false)
+  role             UserRole        @default(CUSTOMER)
+  status           UserStatus      @default(ACTIVE)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Security & Sessions
+  refreshTokens    RefreshToken[]
+  deviceSessions   DeviceSession[]
+  otpVerifications OtpVerification[]
+  auditLogs        AuditLog[]
+
+  // Driver Onboarding Relationship
+  driverProfile    DriverProfile?
+
+  // Ride & Transport Relationships (Extensible Domain)
+  ridesAsCustomer  RideBooking[]   @relation("CustomerRides")
+  ridesAsProvider  RideBooking[]   @relation("ProviderRides")
+  fareOffers       FareOffer[]
+  vehicles         Vehicle[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([username])
+  @@index([role])
+}
+
+model OtpVerification {
+  id          String   @id @default(uuid())
+  email       String
+  phone       String?
+  fullName    String?
+  username    String?
+  otpHash     String   // SHA-256 cryptographically hashed OTP
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(5)
+  isUsed      Boolean  @default(false)
+  expiresAt   DateTime
+  lastSentAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  tokenHash  String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  ipAddress  String?
+  revokedAt  DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model DeviceSession {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId     String
+  deviceModel  String?
+  platform     String?   // 'ios' | 'android' | 'web'
+  pushToken    String?
+  lastActiveAt DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+}
+
+model Vehicle {
+  id            String      @id @default(uuid())
+  providerId    String
+  provider      User        @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  vehicleType   VehicleType
+  make          String
+  model         String
+  color         String
+  licensePlate  String      @unique
+  isVerified    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  rides         RideBooking[]
+
+  @@index([providerId])
+}
+
+model RideBooking {
+  id              String      @id @default(uuid())
+  customerId      String
+  customer        User        @relation("CustomerRides", fields: [customerId], references: [id])
+  providerId      String?
+  provider        User?       @relation("ProviderRides", fields: [providerId], references: [id])
+  vehicleId       String?
+  vehicle         Vehicle?    @relation(fields: [vehicleId], references: [id])
+  
+  status          RideStatus  @default(REQUESTED)
+  vehicleType     VehicleType
+  
+  // Geolocation
+  pickupAddress   String
+  pickupLat       Float
+  pickupLng       Float
+  dropoffAddress  String
+  dropoffLat      Float
+  dropoffLng      Float
+  
+  // Financials
+  estimatedFare   Decimal     @db.Decimal(10, 2)
+  finalFare       Decimal?    @db.Decimal(10, 2)
+  distanceKm      Float?
+  durationMins    Int?
+  
+  // Security PIN
+  startRideOtp    String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  fareOffers      FareOffer[]
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([status])
+}
+
+model FareOffer {
+  id          String       @id @default(uuid())
+  rideId      String
+  ride        RideBooking  @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  providerId  String
+  provider    User         @relation(fields: [providerId], references: [id])
+  offeredFare Decimal      @db.Decimal(10, 2)
+  isAccepted  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  @@index([rideId])
+  @@index([providerId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String   // e.g. "AUTH_LOGIN", "OTP_REQUESTED", "PASSWORD_CHANGED"
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model DriverProfile {
+  id                 String                   @id @default(uuid())
+  userId             String                   @unique
+  user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verificationStatus DriverVerificationStatus @default(INCOMPLETE)
+  currentStep        String                   @default("VEHICLE_SELECT")
+  profileImageUrl    String?
+  submittedAt        DateTime?
+  verifiedAt         DateTime?
+  rejectionReason    String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  vehicles           DriverVehicle[]
+  documents          DriverDocument[]
+  verifications      DriverVerification[]
+
+  @@index([userId])
+  @@index([verificationStatus])
+}
+
+model DriverVehicle {
+  id                  String        @id @default(uuid())
+  driverId            String
+  driver              DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleType         VehicleType
+  registrationNumber  String
+  numberPlateImageUrl String
+  vehicleImageUrl     String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([driverId])
+  @@index([registrationNumber])
+}
+
+model DriverDocument {
+  id                    String             @id @default(uuid())
+  driverId              String
+  driver                DriverProfile      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  documentType          DriverDocumentType
+  documentNumber        String?
+  documentImageFrontUrl String
+  documentImageBackUrl  String?
+  verificationStatus    DocumentStatus     @default(PENDING)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([driverId])
+  @@index([documentType])
+}
+
+model DriverVerification {
+  id         String                   @id @default(uuid())
+  driverId   String
+  driver     DriverProfile            @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  status     DriverVerificationStatus
+  notes      String?
+  reviewedBy String?
+  reviewedAt DateTime                 @default(now())
+  createdAt  DateTime                 @default(now())
+
+  @@index([driverId])
+  @@index([status])
+}
+

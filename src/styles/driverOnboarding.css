@@ -1,0 +1,1001 @@
+/* ============================================================
+   SafarGo - Customer & Driver Onboarding Styles
+   Theme: Premium Green (#16A34A) + Clean White, Glass Cards, Mobile-First
+   ============================================================ */
+
+/* Fullscreen Screen Containers */
+.onboarding-flow-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 850;
+  background-color: #F8FAFC;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.onboarding-flow-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+}
+
+/* Centered Container Frame (Mobile first, max 480px) */
+.flow-container {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 20px max(24px, env(safe-area-inset-bottom, 24px));
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ---- Top Header Bar ---- */
+.flow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  min-height: 44px;
+}
+
+.flow-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1E293B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.flow-back-btn:hover {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #16A34A;
+}
+
+.flow-back-btn:active {
+  transform: scale(0.95);
+}
+
+.flow-brand-logo {
+  height: 26px;
+  object-fit: contain;
+}
+
+.flow-step-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #16A34A;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Step Progress Stepper Bar ---- */
+.flow-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.stepper-bar-segment {
+  flex: 1;
+  height: 4px;
+  background: #E2E8F0;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.stepper-bar-segment.active {
+  background: #16A34A;
+}
+
+.stepper-bar-segment.completed {
+  background: #15803D;
+}
+
+.stepper-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: -16px;
+  margin-bottom: 20px;
+  padding: 0 2px;
+}
+
+.stepper-labels span.active {
+  color: #16A34A;
+  font-weight: 700;
+}
+
+/* ---- Page Title & Subtitle ---- */
+.flow-title-area {
+  margin-bottom: 24px;
+}
+
+.flow-main-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.flow-subtitle {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+/* ---- Role Selection Large Cards ---- */
+.role-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.role-choice-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 24px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  outline: none;
+  text-align: left;
+}
+
+.role-choice-card:hover {
+  border-color: #86EFAC;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.1);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%);
+}
+
+.role-choice-card:active {
+  transform: scale(0.98);
+}
+
+.role-choice-card.selected {
+  border-color: #16A34A;
+  background: #F0FDF4;
+  box-shadow: 0 0 0 1px #16A34A, 0 8px 24px rgba(22, 163, 74, 0.12);
+}
+
+.role-card-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16A34A;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.role-choice-card:hover .role-card-icon-wrap,
+.role-choice-card.selected .role-card-icon-wrap {
+  background: #16A34A;
+  color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+.role-card-text {
+  flex: 1;
+}
+
+.role-card-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role-card-desc {
+  font-size: 0.88rem;
+  color: #64748B;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.role-card-arrow {
+  color: #CBD5E1;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.role-choice-card:hover .role-card-arrow {
+  color: #16A34A;
+  transform: translateX(4px);
+}
+
+/* ---- Vehicle Selection Cards (Bike / Car) ---- */
+.vehicle-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.vehicle-select-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.vehicle-select-card:hover {
+  border-color: #86EFAC;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.08);
+}
+
+.vehicle-select-card.selected {
+  border-color: #16A34A;
+  background: #F0FDF4;
+  box-shadow: 0 0 0 1px #16A34A, 0 8px 24px rgba(22, 163, 74, 0.12);
+}
+
+.vehicle-card-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.vehicle-select-card.selected .vehicle-card-icon-wrap {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.vehicle-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 4px;
+}
+
+.vehicle-card-desc {
+  font-size: 0.8rem;
+  color: #64748B;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.vehicle-check-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #E2E8F0;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.vehicle-select-card.selected .vehicle-check-badge {
+  border-color: #16A34A;
+  background: #16A34A;
+  color: #FFFFFF;
+}
+
+/* ---- Form Fields & Inputs ---- */
+.flow-form-group {
+  margin-bottom: 20px;
+}
+
+.flow-label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.flow-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.flow-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.flow-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px 0 46px;
+  border-radius: 14px;
+  border: 1.5px solid #E2E8F0;
+  background: #FFFFFF;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.flow-input.no-icon {
+  padding-left: 16px;
+}
+
+.flow-input:focus {
+  border-color: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.flow-input.error {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+}
+
+.flow-error-msg {
+  font-size: 0.8rem;
+  color: #EF4444;
+  font-weight: 600;
+  margin-top: 6px;
+  display: none;
+}
+
+.flow-error-msg.visible {
+  display: block;
+}
+
+/* ---- Document Upload Cards ---- */
+.upload-card-wrapper {
+  background: #FFFFFF;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 18px;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.upload-card-wrapper:hover {
+  border-color: #86EFAC;
+  background: #FAFCFF;
+}
+
+.upload-card-wrapper.has-file {
+  border-style: solid;
+  border-color: #86EFAC;
+  background: #F0FDF4;
+}
+
+.upload-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.upload-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-status-chip {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.upload-status-chip.uploaded {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.upload-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 12px;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.upload-action-btns {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.upload-btn-secondary {
+  flex: 1;
+  height: 42px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  color: #334155;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn-secondary:hover {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #16A34A;
+}
+
+.upload-preview-container {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.upload-preview-container.active {
+  display: flex;
+}
+
+.upload-preview-image {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+.upload-preview-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.upload-replace-btn,
+.upload-remove-btn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.upload-replace-btn {
+  background: #F1F5F9;
+  color: #334155;
+}
+
+.upload-replace-btn:hover {
+  background: #E2E8F0;
+}
+
+.upload-remove-btn {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.upload-remove-btn:hover {
+  background: #FECACA;
+}
+
+/* Upload Progress Bar */
+.upload-progress-wrap {
+  width: 100%;
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 10px;
+  display: none;
+}
+
+.upload-progress-wrap.visible {
+  display: block;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  background: #16A34A;
+  width: 0%;
+  transition: width 0.25s ease;
+}
+
+/* Profile Photo Circular Upload */
+.profile-photo-circle-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin: 20px 0 32px;
+}
+
+.profile-photo-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid #DCFCE7;
+  background: #F8FAFC;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.1);
+}
+
+.profile-photo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-circle-placeholder {
+  color: #94A3B8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- Review & Summary Cards ---- */
+.review-section-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.review-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.review-section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #64748B;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.review-edit-btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #16A34A;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.review-edit-btn:hover {
+  background: #F0FDF4;
+}
+
+.review-data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+}
+
+.review-data-label {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.review-data-value {
+  color: #0F172A;
+  font-weight: 700;
+  text-align: right;
+}
+
+.review-checkbox-card {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+  margin: 20px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.review-checkbox-card input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #16A34A;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.review-checkbox-label {
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* Primary Flow Buttons */
+.flow-primary-btn {
+  width: 100%;
+  height: 54px;
+  border-radius: 16px;
+  background: #16A34A;
+  border: none;
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+  margin-top: auto;
+}
+
+.flow-primary-btn:hover {
+  background: #15803D;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+  transform: translateY(-1px);
+}
+
+.flow-primary-btn:active {
+  transform: scale(0.98);
+}
+
+.flow-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---- Verification Status Screen ---- */
+.status-hero-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1px solid #E2E8F0;
+  border-radius: 22px;
+  padding: 32px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.status-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  margin-bottom: 16px;
+}
+
+.status-badge-chip.pending {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.status-badge-chip.approved {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.status-badge-chip.rejected {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.status-badge-chip.suspended {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+/* Timeline Stepper for Verification */
+.status-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.timeline-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.timeline-icon-wrap.done {
+  background: #16A34A;
+  color: #FFFFFF;
+}
+
+.timeline-icon-wrap.active {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 2px solid #F59E0B;
+}
+
+.timeline-icon-wrap.pending {
+  background: #F1F5F9;
+  color: #94A3B8;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.timeline-desc {
+  font-size: 0.8rem;
+  color: #64748B;
+}
+
+/* Simulation Action Bar for Review Testing */
+.sim-admin-box {
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 24px;
+}
+
+.sim-admin-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.sim-admin-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.sim-btn {
+  flex: 1;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sim-btn-approve {
+  background: #16A34A;
+  color: #FFFFFF;
+}
+
+.sim-btn-approve:hover {
+  background: #15803D;
+}
+
+.sim-btn-reject {
+  background: #EF4444;
+  color: #FFFFFF;
+}
+
+.sim-btn-reject:hover {
+  background: #DC2626;
+}
+
+/* ---- Driver Dashboard ---- */
+.driver-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.driver-online-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.driver-online-switch.online {
+  background: #DCFCE7;
+  border-color: #86EFAC;
+  color: #15803D;
+}
+
+.driver-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94A3B8;
+}
+
+.driver-online-switch.online .driver-online-dot {
+  background: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+}
+
+.driver-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.driver-metric-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.driver-metric-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.driver-metric-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.driver-incoming-ride-card {
+  background: #FFFFFF;
+  border: 2px solid #86EFAC;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.12);
+  margin-bottom: 20px;
+  animation: pulseRideCard 2.5s infinite;
+}
+
+@keyframes pulseRideCard {
+  0%, 100% { border-color: #86EFAC; }
+  50% { border-color: #16A34A; }
+}
+
+.driver-ride-fare-badge {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #16A34A;
+}
+
+/* Animations */
+.fade-in {
+  animation: flowFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes flowFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

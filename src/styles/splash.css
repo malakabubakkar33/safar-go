@@ -1,0 +1,204 @@
+/* ============================================================
+   SafarGo Splash Screen Styles
+   Theme: Green (#16A34A) + White, Clean, Premium, Mobile-first
+   ============================================================ */
+
+/* ---- Splash Screen Container ---- */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.splash-screen.splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---- Video Container ---- */
+.splash-video-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.splash-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #ffffff;
+  /* Remove all default browser video controls */
+  pointer-events: none;
+}
+
+/* Hide any native video controls or overlays */
+.splash-video::-webkit-media-controls {
+  display: none !important;
+}
+
+.splash-video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.splash-video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+.splash-video::cue {
+  display: none !important;
+}
+
+/* ---- Fallback Screen ---- */
+.splash-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.splash-fallback-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: splashFallbackFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.splash-logo-icon {
+  animation: splashLogoPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.splash-brand-name {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #16A34A;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.splash-tagline {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6B7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Splash Loader Bar */
+.splash-loader {
+  width: 120px;
+  height: 3px;
+  background-color: #E5E7EB;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.splash-loader-bar {
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, #16A34A, #22C55E);
+  border-radius: 3px;
+  animation: splashLoaderSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ---- Animations ---- */
+@keyframes splashFallbackFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes splashLogoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes splashLoaderSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+/* ---- Responsive Adjustments ---- */
+@media screen and (max-width: 360px) {
+  .splash-brand-name {
+    font-size: 1.75rem;
+  }
+
+  .splash-tagline {
+    font-size: 0.8rem;
+  }
+
+  .splash-logo-icon svg {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .splash-brand-name {
+    font-size: 3rem;
+  }
+
+  .splash-tagline {
+    font-size: 1rem;
+  }
+
+  .splash-logo-icon svg {
+    width: 88px;
+    height: 88px;
+  }
+
+  .splash-loader {
+    width: 160px;
+  }
+}
+
+/* Landscape phone adjustment */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .splash-fallback-content {
+    gap: 8px;
+  }
+
+  .splash-logo-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .splash-brand-name {
+    font-size: 1.5rem;
+  }
+}

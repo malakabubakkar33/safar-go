@@ -1,0 +1,22 @@
+{
+  "malikabubakkar769@gmail.com": {
+    "fullName": "Malik Abubakkar",
+    "username": "alikhan",
+    "phone": "+92974947996",
+    "otpHash": "f7d71a9cc3622d8e14bfea1610d45af5d92a3b20603469a47f6a31a95c9c31e1",
+    "attempts": 0,
+    "maxAttempts": 5,
+    "expiresAt": 1791373800072,
+    "lastSentAt": 1791373200072
+  },
+  "architect@safargo.test": {
+    "fullName": "Antigravity Architect",
+    "username": "architect_01",
+    "phone": "+1234567890",
+    "otpHash": "6b784ffc38978d1b2d75c6815a35a2e65c5339b11a30c6ab6c9db6d2ea0f885b",
+    "attempts": 0,
+    "maxAttempts": 5,
+    "expiresAt": 1791385767525,
+    "lastSentAt": 1791385167525
+  }
+}
