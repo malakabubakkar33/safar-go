@@ -18,5 +18,41 @@
     "maxAttempts": 5,
     "expiresAt": 1791385767525,
     "lastSentAt": 1791385167525
+  },
+  "newtestuser12399@gmail.com": {
+    "fullName": "Test User",
+    "username": "newtestuser12399",
+    "phone": "+923001239999",
+    "otpHash": "0a0d3938797065c519d9e00059eba5003b5bb5c1200f33a7750c6e7ed76f2555",
+    "attempts": 0,
+    "maxAttempts": 5,
+    "createdAt": 1791644460346,
+    "expiresAt": 1791645060346,
+    "lastSentAt": 1791644460346,
+    "updatedAt": 1791644460347
+  },
+  "user_1791645967756@gmail.com": {
+    "fullName": "New SafarGo Tester",
+    "username": "user_2jr0cs",
+    "phone": "+923451112233",
+    "otpHash": "472282b6c2e5924e914ae951883b50c7c5ed9082b6a0f8e5ab8746cc0a35ad93",
+    "attempts": 0,
+    "maxAttempts": 5,
+    "createdAt": 1791645969047,
+    "expiresAt": 1791646569047,
+    "lastSentAt": 1791645969047,
+    "updatedAt": 1791645969049
+  },
+  "malikabubakkar523@gmail.com": {
+    "fullName": "Malik Abubakkar",
+    "username": "malik_customer",
+    "phone": "+92974947996",
+    "otpHash": "34928fda612fbd5a2c6f375eb2db008ecb0df599d0bf7791dcaec507ab7edec9",
+    "attempts": 0,
+    "maxAttempts": 5,
+    "createdAt": 1791645969480,
+    "expiresAt": 1791646569480,
+    "lastSentAt": 1791645969480,
+    "updatedAt": 1791645969483
   }
 }

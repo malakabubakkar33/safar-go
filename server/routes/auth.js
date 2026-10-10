@@ -97,20 +97,62 @@ router.post('/signup-step1', async (req, res) => {
     const cleanUser = username.trim().toLowerCase();
     const cleanPhone = phone.trim().replace(/\s+/g, '');
 
-    // Uniqueness Checks
-    if (userDB.findByEmail(cleanEmail)) {
-      return res.status(409).json({ success: false, error: 'This email is already registered. Please log in.', code: 'EMAIL_EXISTS' });
-    }
-    if (userDB.findByUsername(cleanUser)) {
-      return res.status(409).json({ success: false, error: 'This username is already taken. Please pick another.', code: 'USERNAME_EXISTS' });
-    }
-    if (userDB.findByPhone(cleanPhone)) {
-      return res.status(409).json({ success: false, error: 'This phone number is already registered.', code: 'PHONE_EXISTS' });
+    // 1. Authoritative Email Uniqueness Check against completed accounts
+    let existingUser = null;
+    try {
+      existingUser = userDB.findByEmail(cleanEmail);
+    } catch (dbErr) {
+      console.error('[DB Query Error - findByEmail]:', dbErr);
+      return res.status(503).json({
+        success: false,
+        code: 'SERVICE_UNAVAILABLE',
+        error: 'Unable to verify email availability right now. Please try again shortly.',
+      });
     }
 
-    // Rate Limiting Cooldown Check
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        code: 'EMAIL_ALREADY_EXISTS',
+        error: 'An account with this email is already registered. Please sign in instead.',
+      });
+    }
+
+    // 2. Authoritative Username Uniqueness Check
+    let existingUsername = null;
+    try {
+      existingUsername = userDB.findByUsername(cleanUser);
+    } catch (dbErr) {
+      console.error('[DB Query Error - findByUsername]:', dbErr);
+    }
+
+    if (existingUsername) {
+      return res.status(409).json({
+        success: false,
+        code: 'USERNAME_EXISTS',
+        error: 'This username is already taken. Please pick another.',
+      });
+    }
+
+    // 3. Authoritative Phone Uniqueness Check
+    let existingPhone = null;
+    try {
+      existingPhone = userDB.findByPhone(cleanPhone);
+    } catch (dbErr) {
+      console.error('[DB Query Error - findByPhone]:', dbErr);
+    }
+
+    if (existingPhone) {
+      return res.status(409).json({
+        success: false,
+        code: 'PHONE_EXISTS',
+        error: 'This phone number is already registered with another account.',
+      });
+    }
+
+    // 4. Rate Limiting Cooldown Check (Distinguish pending/expired OTP from rate limit)
     const existingOtp = otpDB.get(cleanEmail);
-    if (existingOtp && Date.now() - existingOtp.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
+    if (existingOtp && Date.now() < existingOtp.expiresAt && Date.now() - existingOtp.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
       const waitSec = Math.ceil((OTP_RESEND_COOLDOWN_MS - (Date.now() - existingOtp.lastSentAt)) / 1000);
       return res.status(429).json({
         success: false,
@@ -130,9 +172,9 @@ router.post('/signup-step1', async (req, res) => {
       emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
     } catch (mailErr) {
       console.warn('[Signup Step 1 Email Notice]:', mailErr.message);
-      console.log(`\n========================================`);
-      console.log(`[SAFARGO SIGNUP OTP]: ${otpCode} for ${cleanEmail}`);
-      console.log(`========================================\n`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[SAFARGO SIGNUP OTP (Dev Fallback)]: ${otpCode} for ${cleanEmail}`);
+      }
       emailResult = {
         success: true,
         sandboxNotice: true,

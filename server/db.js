@@ -94,12 +94,11 @@ export const userDB = {
       const uDigits = (u.phone || '').replace(/\D/g, '');
 
       if (uEmail === cleanId || uUser === cleanId) return true;
-      if (digitsOnly.length >= 7) {
+      if (digitsOnly.length >= 9 && uDigits.length >= 9) {
         if (uDigits === digitsOnly) return true;
-        const normInput = digitsOnly.replace(/^0+/, '');
-        const normUser = uDigits.replace(/^0+/, '');
-        if (normUser === normInput) return true;
-        if (normUser.endsWith(normInput) || normInput.endsWith(normUser)) return true;
+        const normInput = digitsOnly.replace(/^0+/, '').replace(/^92/, '');
+        const normUser = uDigits.replace(/^0+/, '').replace(/^92/, '');
+        if (normUser.length >= 9 && normUser === normInput) return true;
       }
       return false;
     }) || null;
@@ -108,19 +107,38 @@ export const userDB = {
     if (!email) return null;
     const cleanEmail = String(email).trim().toLowerCase();
     const users = this.getAll();
-    return users.find(u => u.email.toLowerCase() === cleanEmail) || null;
+    return users.find(u => {
+      const uEmail = (u.email || '').trim().toLowerCase();
+      if (uEmail !== cleanEmail) return false;
+      // Only treat completed, active registered accounts as existing
+      return Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING');
+    }) || null;
+  },
+  findAnyByEmail(email) {
+    if (!email) return null;
+    const cleanEmail = String(email).trim().toLowerCase();
+    const users = this.getAll();
+    return users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) || null;
   },
   findByUsername(username) {
     if (!username) return null;
     const cleanUser = String(username).trim().toLowerCase();
     const users = this.getAll();
-    return users.find(u => u.username.toLowerCase() === cleanUser) || null;
+    return users.find(u => {
+      const uUser = (u.username || '').trim().toLowerCase();
+      if (uUser !== cleanUser) return false;
+      return Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING');
+    }) || null;
   },
   findByPhone(phone) {
     if (!phone) return null;
     const cleanPhone = String(phone).trim().replace(/\s+/g, '');
     const users = this.getAll();
-    return users.find(u => u.phone.replace(/\s+/g, '') === cleanPhone) || null;
+    return users.find(u => {
+      const uPhone = (u.phone || '').trim().replace(/\s+/g, '');
+      if (uPhone !== cleanPhone) return false;
+      return Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING');
+    }) || null;
   },
   findById(id) {
     if (!id) return null;

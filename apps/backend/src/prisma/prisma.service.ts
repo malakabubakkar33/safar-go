@@ -95,18 +95,36 @@ export class PrismaService {
 
   async findUserByEmail(email: string): Promise<UserRecord | null> {
     const users = readFile<UserRecord[]>(USERS_FILE, []);
-    return users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase()) || null;
+    return (
+      users.find(
+        (u) =>
+          u.email.toLowerCase() === email.trim().toLowerCase() &&
+          Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING')
+      ) || null
+    );
   }
 
   async findUserByUsername(username: string): Promise<UserRecord | null> {
     const users = readFile<UserRecord[]>(USERS_FILE, []);
-    return users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase()) || null;
+    return (
+      users.find(
+        (u) =>
+          u.username.toLowerCase() === username.trim().toLowerCase() &&
+          Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING')
+      ) || null
+    );
   }
 
   async findUserByPhone(phone: string): Promise<UserRecord | null> {
     const users = readFile<UserRecord[]>(USERS_FILE, []);
     const cleanPhone = phone.trim().replace(/\s+/g, '');
-    return users.find((u) => u.phone.replace(/\s+/g, '') === cleanPhone) || null;
+    return (
+      users.find(
+        (u) =>
+          u.phone.replace(/\s+/g, '') === cleanPhone &&
+          Boolean(u.passwordHash && u.isVerified !== false && u.status !== 'INCOMPLETE' && u.status !== 'PENDING')
+      ) || null
+    );
   }
 
   async findUserById(id: string): Promise<UserRecord | null> {

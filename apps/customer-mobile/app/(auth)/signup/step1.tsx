@@ -43,12 +43,18 @@ export default function SignupStep1Screen() {
     setIsLoading(true);
 
     try {
-      const response = await api.signupStep1(data);
+      const cleanData: SignupStep1Input = {
+        fullName: data.fullName.trim(),
+        email: data.email.trim().toLowerCase(),
+        phone: data.phone.trim().replace(/\s+/g, ''),
+        username: data.username.trim().toLowerCase(),
+      };
+      const response = await api.signupStep1(cleanData);
       setSignupStep1Data({
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        username: data.username,
+        fullName: cleanData.fullName,
+        email: cleanData.email,
+        phone: cleanData.phone,
+        username: cleanData.username,
         emailMasked: response.emailMasked,
         cooldownSeconds: response.cooldownSeconds || 60,
       });

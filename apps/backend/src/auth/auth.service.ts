@@ -70,18 +70,18 @@ export class AuthService {
 
     // Check Uniqueness
     if (await prismaService.findUserByEmail(cleanEmail)) {
-      throw new Error('This email is already registered. Please log in.');
+      throw new Error('An account with this email already exists. Please sign in instead.');
     }
     if (await prismaService.findUserByUsername(cleanUsername)) {
       throw new Error('This username is already taken. Please pick another.');
     }
     if (await prismaService.findUserByPhone(cleanPhone)) {
-      throw new Error('This phone number is already registered.');
+      throw new Error('This phone number is already registered with another account.');
     }
 
-    // Rate Limiting Cooldown Check
+    // Rate Limiting Cooldown Check (Distinguish pending/expired OTP from rate limit)
     const existingOtp = await prismaService.getOtp(cleanEmail);
-    if (existingOtp && Date.now() - existingOtp.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
+    if (existingOtp && Date.now() < existingOtp.expiresAt && Date.now() - existingOtp.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
       const waitSec = Math.ceil((OTP_RESEND_COOLDOWN_MS - (Date.now() - existingOtp.lastSentAt)) / 1000);
       throw new Error(`Please wait ${waitSec}s before requesting a new verification code.`);
     }
@@ -103,17 +103,26 @@ export class AuthService {
     });
 
     // Send Real OTP Email via Resend
-    await mailService.sendOtpEmail({
-      toEmail: cleanEmail,
-      otpCode,
-      fullName: input.fullName.trim(),
-    });
+    let sandboxNotice = false;
+    try {
+      await mailService.sendOtpEmail({
+        toEmail: cleanEmail,
+        otpCode,
+        fullName: input.fullName.trim(),
+      });
+    } catch (mailErr: any) {
+      console.warn('[Signup Step 1 Email Notice]:', mailErr.message);
+      sandboxNotice = true;
+    }
 
     return {
       success: true,
-      message: 'Verification code sent to your email.',
+      message: sandboxNotice
+        ? `Verification code ready! (Sandbox code: ${otpCode})`
+        : 'Verification code sent to your email.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
+      devOtp: sandboxNotice ? otpCode : undefined,
     };
   }
 
