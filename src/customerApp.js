@@ -183,14 +183,29 @@ function initMap() {
     maxBoundsViscosity: 1.0,
   }).setView([pickupCoords.lat, pickupCoords.lng], 14);
 
-  // Modern clean CARTO Voyager tiles with attribution
-  window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    subdomains: 'abcd',
-    minZoom: 12,
-    maxZoom: 19,
-    bounds: pshBounds,
-  }).addTo(map);
+  // Official Google Maps Roadmap Tiles strictly bounded to Peshawar, Pakistan
+  const googleTileLayer = window.L.tileLayer(
+    'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao',
+    {
+      attribution: '&copy; Google Maps',
+      subdomains: ['0', '1', '2', '3'],
+      minZoom: 12,
+      maxZoom: 19,
+      bounds: pshBounds,
+    }
+  );
+
+  googleTileLayer.on('tileerror', () => {
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      subdomains: 'abcd',
+      minZoom: 12,
+      maxZoom: 19,
+      bounds: pshBounds,
+    }).addTo(map);
+  });
+
+  googleTileLayer.addTo(map);
 
   // Pickup marker
   userMarker = window.L.marker([pickupCoords.lat, pickupCoords.lng], {
@@ -492,6 +507,34 @@ function setupLocationSearchSheet() {
         }
       }, 300);
     });
+
+    // Connect Google Places Autocomplete strictly bounded to Peshawar, Pakistan
+    if (typeof window.google !== 'undefined' && window.google.maps && window.google.maps.places) {
+      try {
+        const pshBounds = new window.google.maps.LatLngBounds(
+          new window.google.maps.LatLng(33.8800, 71.3900),
+          new window.google.maps.LatLng(34.1400, 71.6800)
+        );
+        const autocomplete = new window.google.maps.places.Autocomplete(destInput, {
+          bounds: pshBounds,
+          componentRestrictions: { country: 'pk' },
+          strictBounds: true,
+          fields: ['geometry', 'name', 'formatted_address'],
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place && place.geometry && place.geometry.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            const address = place.formatted_address || place.name || destInput.value;
+            selectDestination(lat, lng, address);
+          }
+        });
+      } catch (gErr) {
+        console.warn('Google Places Autocomplete setup notice:', gErr);
+      }
+    }
   }
 }
 

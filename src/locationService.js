@@ -6,10 +6,11 @@
 
 export const LOCATION_CONFIG = {
   apiKey: 'ad129807860e7b56d327bf3aa0a0e4e1',
+  googleMapsApiKey: 'AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao',
   defaultCoordinates: {
-    lat: 31.5204, // Default urban coordinates
-    lng: 74.3587,
-    city: 'Lahore',
+    lat: 34.0151, // Peshawar Saddar center
+    lng: 71.5249,
+    city: 'Peshawar',
     country: 'Pakistan',
   },
 };

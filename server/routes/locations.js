@@ -225,6 +225,52 @@ router.get('/search', async (req, res) => {
 
   // 2. Query external geocoding providers bounded strictly to Peshawar
   let externalMatches = [];
+  const googleApiKey = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao';
+
+  // Attempt Google Geocoding bounded strictly to Peshawar, Pakistan
+  if (googleApiKey) {
+    try {
+      const gUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ' Peshawar')}&bounds=${PESHAWAR_BOUNDS.minLat},${PESHAWAR_BOUNDS.minLng}|${PESHAWAR_BOUNDS.maxLat},${PESHAWAR_BOUNDS.maxLng}&components=country:PK&key=${googleApiKey}`;
+      const gResp = await fetch(gUrl, { signal: AbortSignal.timeout(2000) });
+      if (gResp.ok) {
+        const gData = await gResp.json();
+        if (gData.status === 'OK' && Array.isArray(gData.results)) {
+          const gMatches = gData.results
+            .filter((r) => {
+              const lat = r.geometry?.location?.lat;
+              const lng = r.geometry?.location?.lng;
+              return isWithinPeshawarServiceArea(lat, lng);
+            })
+            .map((r) => {
+              const lat = r.geometry.location.lat;
+              const lng = r.geometry.location.lng;
+              const name = r.address_components?.[0]?.long_name || r.formatted_address.split(',')[0];
+              let distanceKm = undefined;
+              if (!isNaN(userLat) && !isNaN(userLng)) {
+                distanceKm = calculateHaversineKm(userLat, userLng, lat, lng);
+              }
+              return {
+                id: `g_${r.place_id}`,
+                name,
+                title: name,
+                address: r.formatted_address,
+                lat,
+                lng,
+                category: 'Google Place',
+                city: 'Peshawar',
+                distanceKm,
+                isWithinServiceArea: true,
+                source: 'google_maps',
+              };
+            });
+          externalMatches.push(...gMatches);
+        }
+      }
+    } catch {
+      // Fall through to Photon
+    }
+  }
+
   try {
     // Attempt Photon (OpenStreetMap Elasticsearch by Komoot - fast, reliable, rate-limit tolerant)
     const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query + ' Peshawar')}&bbox=${PESHAWAR_BOUNDS.minLng},${PESHAWAR_BOUNDS.minLat},${PESHAWAR_BOUNDS.maxLng},${PESHAWAR_BOUNDS.maxLat}&limit=6`;
@@ -322,6 +368,30 @@ router.get('/reverse', async (req, res) => {
       isWithinServiceArea: isPsh,
       distanceToLandmarkKm: minDistance,
     });
+  }
+
+  // Attempt Google Reverse Geocoding bounded to Peshawar, Pakistan
+  if (googleApiKey && isPsh) {
+    try {
+      const gRevUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&components=country:PK&key=${googleApiKey}`;
+      const gResp = await fetch(gRevUrl, { signal: AbortSignal.timeout(2000) });
+      if (gResp.ok) {
+        const gData = await gResp.json();
+        if (gData.status === 'OK' && gData.results?.[0]) {
+          const res0 = gData.results[0];
+          const name = res0.address_components?.[0]?.long_name || res0.formatted_address.split(',')[0];
+          return res.json({
+            address: res0.formatted_address,
+            name,
+            city: 'Peshawar',
+            lat,
+            lng,
+            isWithinServiceArea: true,
+            source: 'google_maps',
+          });
+        }
+      }
+    } catch {}
   }
 
   // Query Photon reverse geocoder

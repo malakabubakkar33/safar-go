@@ -12,9 +12,28 @@ export interface TileLayerConfig {
   subdomains?: string[];
 }
 
+export const GOOGLE_MAPS_CONFIG = {
+  apiKey: 'AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao',
+  city: 'Peshawar',
+  country: 'Pakistan',
+  center: { lat: 34.0151, lng: 71.5249 },
+};
+
 export const MapService = {
   /**
-   * Primary tile layer: CARTO Voyager (High-resolution, clean vector-raster with English/Urdu labels)
+   * Primary tile layer: Google Maps Vector Roadmap strictly for Peshawar, Pakistan
+   */
+  getGoogleMapsTileLayer(): TileLayerConfig {
+    return {
+      url: `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_CONFIG.apiKey}`,
+      attribution: '&copy; Google Maps',
+      maxZoom: 19,
+      subdomains: ['0', '1', '2', '3'],
+    };
+  },
+
+  /**
+   * CARTO Voyager layer
    */
   getPrimaryTileLayer(): TileLayerConfig {
     return {
