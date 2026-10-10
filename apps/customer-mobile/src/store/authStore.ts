@@ -40,6 +40,7 @@ interface AuthStoreState {
   setAuthSuccess: (user: UserProfile, tokens: AuthTokens) => void;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
+  updateUserAvatar: (avatarUrl: string) => void;
   resetSignupFlow: () => void;
   logout: () => void;
 }
@@ -133,6 +134,18 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
 
   setError: (error) => set({ error }),
   setLoading: (isLoading) => set({ isLoading }),
+
+  updateUserAvatar: (avatarUrl) =>
+    set((state) => {
+      if (!state.user) return state;
+      const updatedUser = { ...state.user, avatarUrl };
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem('safargo_user', JSON.stringify(updatedUser));
+        } catch {}
+      }
+      return { user: updatedUser };
+    }),
 
   resetSignupFlow: () => set({ signupFlow: initialSignupState }),
 

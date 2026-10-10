@@ -47,3 +47,8 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# User uploads & ephemeral test files
+public/uploads/avatars/avatar-*
+public/uploads/documents/*
+

@@ -68,6 +68,12 @@ function makeResendRequest(apiKey, fromEmail, toEmail, subject, html) {
 }
 
 export async function sendOtpEmail(toEmail, otpCode, fullName = 'Valued User') {
+  if (process.env.MOCK_EMAIL === 'true') {
+    global.__lastMockOtp = otpCode;
+    console.log(`[Test Mock Email Service] Simulated email delivery to ${toEmail} (OTP: ${otpCode})`);
+    return { success: true, id: `mock_msg_${Date.now()}` };
+  }
+
   const apiKey = (process.env.RESEND_API_KEY || '').trim();
   const fromEmail = process.env.EMAIL_FROM || 'SafarGo <onboarding@resend.dev>';
 
@@ -138,14 +144,14 @@ export async function sendOtpEmail(toEmail, otpCode, fullName = 'Valued User') {
       lastError = err;
       console.error(`[Resend Attempt ${attempt} Failed]:`, err.message);
 
-      // If it's a 403 sandbox restriction, Resend free test domain (onboarding@resend.dev) only allows owner email
+      // Handle Resend free tier restriction clearly and honestly
       if (err.statusCode === 403 || (err.message && err.message.includes('only send testing emails'))) {
-        console.warn(`\n======================================================`);
-        console.warn(`[OTP GENERATED FOR ${toEmail}]: >> ${otpCode} <<`);
-        console.warn(`[Resend Notice]: Free test domain onboarding@resend.dev only delivers to account owner.`);
-        console.warn(`[Bypass / Sandbox active]: Code ${otpCode} (or 123456) can be used to verify immediately.`);
-        console.warn(`======================================================\n`);
-        return { success: true, sandboxNotice: true, id: 'sandbox_generated_' + Date.now(), otpCode };
+        const customErr = new Error(
+          'Email Delivery Notice: Resend test domain (onboarding@resend.dev) can only deliver to your registered account email (malikabubakkar523@gmail.com). To send to other addresses, please verify a custom domain on resend.com/domains or configure production SMTP.'
+        );
+        customErr.code = 'PROVIDER_SANDBOX_RESTRICTION';
+        customErr.statusCode = 403;
+        throw customErr;
       }
 
       if (attempt < 2) {

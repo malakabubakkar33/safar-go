@@ -128,6 +128,14 @@ export default function LoginScreen() {
               {errors.password && (
                 <Text style={styles.fieldError}>{errors.password.message}</Text>
               )}
+              <View style={styles.forgotPasswordRow}>
+                <TouchableOpacity
+                  onPress={() => router.push('/(auth)/forgot-password' as any)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Login Button */}
@@ -258,6 +266,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontWeight: '500',
+  },
+  forgotPasswordRow: {
+    alignItems: 'flex-end',
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#16A34A',
   },
   submitButton: {
     height: 54,

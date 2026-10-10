@@ -12,9 +12,12 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/services/api';
 
@@ -22,11 +25,13 @@ export default function ProfileScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const updateUserAvatar = useAuthStore((s) => s.updateUserAvatar);
 
   const [savedPlaces, setSavedPlaces] = useState<any[]>([]);
   const [showAddPlace, setShowAddPlace] = useState(false);
   const [newLabel, setNewLabel] = useState('Home');
   const [newAddress, setNewAddress] = useState('');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
     api.getSavedPlaces()
@@ -67,6 +72,108 @@ export default function ProfileScreen() {
     } catch {}
   };
 
+  const uploadAndSaveAvatar = async (uri: string) => {
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      if (Platform.OS === 'web') {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('avatar', blob, 'profile_avatar.jpg');
+      } else {
+        formData.append('avatar', {
+          uri,
+          name: 'profile_avatar.jpg',
+          type: 'image/jpeg',
+        } as any);
+      }
+
+      const res = await api.updateProfileAvatar(formData);
+      if (res.success && res.avatarUrl) {
+        updateUserAvatar(res.avatarUrl);
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to update profile picture.');
+      }
+    } catch (err: any) {
+      Alert.alert('Upload Error', err.message || 'Could not update profile photo.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handlePickAvatar = async () => {
+    if (Platform.OS === 'web') {
+      try {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.85,
+        });
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          await uploadAndSaveAvatar(result.assets[0].uri);
+        }
+      } catch (err: any) {
+        Alert.alert('Selection Error', err.message || 'Failed to open image picker.');
+      }
+      return;
+    }
+
+    Alert.alert(
+      'Profile Picture',
+      'Choose a source for your photo',
+      [
+        {
+          text: 'Take Photo',
+          onPress: async () => {
+            try {
+              const perm = await ImagePicker.requestCameraPermissionsAsync();
+              if (!perm.granted) {
+                Alert.alert('Permission Denied', 'Camera permission is required.');
+                return;
+              }
+              const res = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.85,
+              });
+              if (!res.canceled && res.assets?.[0]?.uri) {
+                await uploadAndSaveAvatar(res.assets[0].uri);
+              }
+            } catch (err: any) {
+              Alert.alert('Camera Error', err.message || 'Could not access camera.');
+            }
+          },
+        },
+        {
+          text: 'Choose from Gallery',
+          onPress: async () => {
+            try {
+              const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!perm.granted) {
+                Alert.alert('Permission Denied', 'Photo library permission is required.');
+                return;
+              }
+              const res = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.85,
+              });
+              if (!res.canceled && res.assets?.[0]?.uri) {
+                await uploadAndSaveAvatar(res.assets[0].uri);
+              }
+            } catch (err: any) {
+              Alert.alert('Gallery Error', err.message || 'Could not access photo library.');
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
@@ -80,18 +187,41 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         {/* User Card */}
         <View style={styles.userCard}>
-          <View style={styles.avatarWrap}>
-            {user?.avatarUrl ? (
-              <Image source={{ uri: user.avatarUrl }} style={styles.avatarImg} />
-            ) : (
-              <Text style={styles.avatarInitial}>
-                {user?.fullName ? user.fullName[0].toUpperCase() : 'U'}
-              </Text>
-            )}
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatarWrap}>
+              {isUploadingAvatar ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : user?.avatarUrl ? (
+                <Image source={{ uri: user.avatarUrl }} style={styles.avatarImg} />
+              ) : (
+                <Text style={styles.avatarInitial}>
+                  {user?.fullName ? user.fullName[0].toUpperCase() : 'U'}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.avatarEditBadge}
+              onPress={handlePickAvatar}
+              disabled={isUploadingAvatar}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.avatarEditIcon}>📷</Text>
+            </TouchableOpacity>
           </View>
           <Text style={styles.userName}>{user?.fullName || 'SafarGo Traveler'}</Text>
           <Text style={styles.userHandle}>@{user?.username || 'user'}</Text>
           <Text style={styles.userContact}>{user?.email} • {user?.phone}</Text>
+
+          <TouchableOpacity
+            style={styles.changePhotoBtn}
+            onPress={handlePickAvatar}
+            disabled={isUploadingAvatar}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.changePhotoText}>
+              {isUploadingAvatar ? 'Uploading photo...' : 'Change Profile Photo'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Saved Places Section */}
@@ -240,15 +370,53 @@ const styles = StyleSheet.create({
     padding: 22,
     marginBottom: 24,
   },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: 10,
+  },
   avatarWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#0F172A',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarEditIcon: {
+    fontSize: 13,
+  },
+  changePhotoBtn: {
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+  },
+  changePhotoText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803D',
   },
   avatarImg: {
     width: '100%',

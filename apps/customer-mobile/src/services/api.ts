@@ -313,6 +313,59 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Password Recovery Endpoints
+  async forgotPassword(email: string): Promise<{ success: boolean; message: string; emailMasked?: string }> {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async verifyResetOtp(email: string, otp: string): Promise<{ success: boolean; resetToken: string; message: string }> {
+    return this.request('/auth/verify-reset-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+
+  async resetPassword(data: { resetToken?: string; identifier?: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Profile Management & Avatar Updates
+  async updateProfileAvatar(formData: FormData): Promise<{ success: boolean; avatarUrl: string; user: any }> {
+    const url = `${API_BASE_URL}/auth/profile/avatar`;
+    const tokens = useAuthStore.getState().tokens;
+
+    const headers: Record<string, string> = {};
+    if (tokens?.accessToken) {
+      headers['Authorization'] = `Bearer ${tokens.accessToken}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => ({ error: 'Upload failed' }));
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update avatar');
+    }
+    return data;
+  }
+
+  // Role Selection (Customer vs Driver)
+  async selectRole(role: 'CUSTOMER' | 'DRIVER'): Promise<{ success: boolean; role: string; user: any; driverProfile?: any }> {
+    return this.request('/onboarding/role', {
+      method: 'POST',
+      body: JSON.stringify({ role }),
+    });
+  }
 }
 
 export const api = new ApiService();

@@ -158,49 +158,36 @@ router.post('/request', requireAuth, async (req, res) => {
   emitToAvailableDrivers('ride:requested', newRide);
 
   // Discover approved drivers in system
-  const approvedDrivers = driverProfileDB.getAll().filter(
+  const allApproved = driverProfileDB.getAll().filter(
     (p) => p.verificationStatus === 'APPROVED' && p.userId !== req.user.id
   );
 
-  // Generate initial driver response offers based on registered drivers or active profiles
-  setTimeout(() => {
-    // If drivers exist in database, create realistic offers
-    const candidateDrivers = approvedDrivers.length > 0 ? approvedDrivers : [
-      {
-        id: 'drv_demo_01',
-        fullName: 'Muhammad Tariq',
-        phone: '+92 300 8472910',
-        rating: 4.9,
-        rides: 382,
-        vehicleType: vType,
-        makeModel: vType === 'BIKE' ? 'Honda CD 70' : 'Toyota Yaris ATIV',
-        regNum: vType === 'BIKE' ? 'LE-21-4890' : 'LEE-22-9182',
-        avatar: '/brand/safargo-symbol.svg',
-      },
-      {
-        id: 'drv_demo_02',
-        fullName: 'Zubair Ahmed',
-        phone: '+92 321 4452109',
-        rating: 4.8,
-        rides: 194,
-        vehicleType: vType,
-        makeModel: vType === 'BIKE' ? 'Yamaha YBR 125' : 'Suzuki Alto VXL',
-        regNum: vType === 'BIKE' ? 'LXZ-20-1120' : 'LRN-23-4019',
-        avatar: '/brand/safargo-symbol.svg',
-      },
-      {
-        id: 'drv_demo_03',
-        fullName: 'Kashif Mehmood',
-        phone: '+92 333 9812401',
-        rating: 4.95,
-        rides: 540,
-        vehicleType: vType,
-        makeModel: vType === 'BIKE' ? 'Honda 125' : 'Honda City Aspire',
-        regNum: vType === 'BIKE' ? 'LRX-22-7741' : 'LEA-21-3094',
-        avatar: '/brand/safargo-symbol.svg',
-      },
-    ];
+  // Match registered vehicles from database
+  const candidateDrivers = allApproved.map((p) => {
+    const vehicle = driverVehicleDB.getAll().find(
+      (v) => (v.driverId === p.id || v.driverId === p.userId)
+    );
 
+    const makeModel = vehicle?.make
+      ? `${vehicle.make} ${vehicle.model || ''}`.trim()
+      : (vType === 'BIKE' ? 'Honda CD 70' : 'Toyota Corolla');
+    const regNum = vehicle?.registrationNumber || 'PSH-2024';
+
+    return {
+      id: p.id || p.userId,
+      userId: p.userId,
+      fullName: p.fullName || 'SafarGo Driver',
+      phone: p.phone || '',
+      rating: p.rating || 4.9,
+      rides: p.totalRides || 50,
+      vehicleType: vehicle?.vehicleType || vType,
+      makeModel,
+      regNum,
+      avatar: p.profileImageUrl || '/brand/safargo-symbol.svg',
+    };
+  }).filter((d) => !d.vehicleType || d.vehicleType === vType || allApproved.length <= 1);
+
+  setTimeout(() => {
     candidateDrivers.slice(0, 3).forEach((drv, idx) => {
       setTimeout(() => {
         // Only add if ride is still searching/requesting
@@ -223,7 +210,7 @@ router.post('/request', requireAuth, async (req, res) => {
           driverRides: drv.rides || 240,
           vehicleType: vType,
           vehicleInfo: drv.makeModel || `${drv.vehicleType || vType}`,
-          registrationNumber: drv.regNum || 'LE-2024',
+          registrationNumber: drv.regNum || 'PSH-2024',
           driverAvatar: drv.avatar || drv.profileImageUrl || '/brand/safargo-symbol.svg',
           offeredFare: offerFare,
           etaMinutes: 2 + idx * 2,
@@ -462,6 +449,17 @@ router.post('/:id/driver-progress', requireAuth, (req, res) => {
   const ride = rideDB.findById(req.params.id);
   if (!ride) return res.status(404).json({ error: 'Ride not found.' });
 
+  // ENFORCE: Only approved drivers are authorized to progress ride status
+  if (req.user.role === 'DRIVER' || req.user.role === 'PROVIDER') {
+    const driverProfile = driverProfileDB.findByUserId(req.user.id);
+    if (!driverProfile || driverProfile.verificationStatus !== 'APPROVED') {
+      return res.status(403).json({
+        error: 'Only approved drivers can progress rides.',
+        code: 'DRIVER_NOT_APPROVED',
+      });
+    }
+  }
+
   const validTransitions = [
     'DRIVER_EN_ROUTE',
     'DRIVER_ARRIVED',
@@ -492,6 +490,51 @@ router.post('/:id/driver-progress', requireAuth, (req, res) => {
   }
 
   return res.json({ success: true, ride: updatedRide });
+});
+
+// 9b. DRIVER SUBMITS DIRECT FARE OFFER
+router.post('/:id/submit-offer', requireAuth, (req, res) => {
+  const { offeredFare, etaMinutes } = req.body;
+  const ride = rideDB.findById(req.params.id);
+  if (!ride) return res.status(404).json({ error: 'Ride not found.' });
+
+  // ENFORCE: Only approved drivers are allowed to submit offers
+  const driverProfile = driverProfileDB.findByUserId(req.user.id);
+  if (!driverProfile || driverProfile.verificationStatus !== 'APPROVED') {
+    return res.status(403).json({
+      error: 'Only approved drivers with verified status can submit ride offers.',
+      code: 'DRIVER_NOT_APPROVED',
+    });
+  }
+
+  const driverVehicle = driverVehicleDB.getAll().find(
+    (v) => (v.driverId === driverProfile.id || v.driverId === req.user.id)
+  );
+
+  const offer = {
+    id: `ofr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    rideId: ride.id,
+    driverId: driverProfile.id || req.user.id,
+    driverName: req.user.fullName || driverProfile.fullName || 'Driver',
+    driverPhone: req.user.phone || driverProfile.phone || '',
+    driverRating: driverProfile.rating || 4.9,
+    driverRides: driverProfile.totalRides || 0,
+    vehicleType: driverVehicle?.vehicleType || ride.vehicleType,
+    vehicleInfo: driverVehicle ? `${driverVehicle.make} ${driverVehicle.model || ''}`.trim() : 'Vehicle',
+    registrationNumber: driverVehicle?.registrationNumber || 'PSH-2024',
+    driverAvatar: driverProfile.profileImageUrl || req.user.avatarUrl || '/brand/safargo-symbol.svg',
+    offeredFare: Number(offeredFare || ride.estimatedFare),
+    etaMinutes: Number(etaMinutes || 3),
+    distanceKm: 1.2,
+    status: 'PENDING',
+    createdAt: new Date().toISOString(),
+  };
+
+  rideOfferDB.create(offer);
+  rideDB.update(ride.id, { status: 'DRIVERS_RESPONDING' });
+  emitRideEvent(ride.id, 'ride:offer', offer);
+
+  return res.json({ success: true, offer });
 });
 
 // 10. CANCEL RIDE

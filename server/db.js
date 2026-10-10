@@ -162,6 +162,16 @@ export const userDB = {
     };
     writeFile(USERS_FILE, users);
     return users[index];
+  },
+  delete(id) {
+    if (!id) return false;
+    const users = this.getAll();
+    const filtered = users.filter(u => u.id !== id);
+    if (filtered.length !== users.length) {
+      writeFile(USERS_FILE, filtered);
+      return true;
+    }
+    return false;
   }
 };
 

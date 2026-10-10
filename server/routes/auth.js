@@ -167,19 +167,16 @@ router.post('/signup-step1', async (req, res) => {
     const otpHash = crypto.createHash('sha256').update(`${otpCode}:${cleanEmail}`).digest('hex');
 
     // Send Email via Resend (with development/sandbox fallback if Resend restrictions apply)
-    let emailResult = null;
+    // Attempt email dispatch through configured provider
     try {
-      emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
+      const emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
     } catch (mailErr) {
-      console.warn('[Signup Step 1 Email Notice]:', mailErr.message);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[SAFARGO SIGNUP OTP (Dev Fallback)]: ${otpCode} for ${cleanEmail}`);
-      }
-      emailResult = {
-        success: true,
-        sandboxNotice: true,
-        otpCode,
-      };
+      console.error('[Signup Step 1 Email Delivery Failure]:', mailErr.message);
+      return res.status(mailErr.statusCode || 500).json({
+        success: false,
+        code: mailErr.code || 'EMAIL_DELIVERY_FAILED',
+        error: mailErr.message || 'Failed to dispatch verification email. Please check email provider configuration.',
+      });
     }
 
     // Invalidate any previously verified session for this email
@@ -198,19 +195,12 @@ router.post('/signup-step1', async (req, res) => {
       lastSentAt: Date.now(),
     });
 
-    const responseData = {
+    return res.json({
       success: true,
-      message: emailResult?.sandboxNotice
-        ? `Verification code ready! (Sandbox code: ${otpCode})`
-        : 'Verification code sent to your email.',
+      message: 'Verification code sent to your email.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
-    };
-    if (emailResult?.sandboxNotice || emailResult?.otpCode) {
-      responseData.devOtp = otpCode;
-    }
-
-    return res.json(responseData);
+    });
   } catch (err) {
     console.error('[Signup Step 1 Error]:', err);
     let userMsg = err.message || 'Failed to dispatch verification email. Please try again.';
@@ -265,20 +255,17 @@ router.post('/resend-otp', async (req, res) => {
     const newOtpCode = crypto.randomInt(100000, 1000000).toString();
     const newOtpHash = crypto.createHash('sha256').update(`${newOtpCode}:${cleanEmail}`).digest('hex');
 
-    // Send New Email via Resend (with sandbox fallback)
+    // Send New Email via Resend
     let emailResult = null;
     try {
       emailResult = await sendOtpEmail(cleanEmail, newOtpCode, existing.fullName);
     } catch (mailErr) {
-      console.warn('[Resend OTP Email Notice]:', mailErr.message);
-      console.log(`\n========================================`);
-      console.log(`[SAFARGO RESEND OTP]: ${newOtpCode} for ${cleanEmail}`);
-      console.log(`========================================\n`);
-      emailResult = {
-        success: true,
-        sandboxNotice: true,
-        otpCode: newOtpCode,
-      };
+      console.error('[Resend OTP Email Delivery Failure]:', mailErr.message);
+      return res.status(mailErr.statusCode || 500).json({
+        success: false,
+        code: mailErr.code || 'EMAIL_DELIVERY_FAILED',
+        error: mailErr.message || 'Failed to dispatch new verification code.',
+      });
     }
 
     // Invalidate any previously verified session for this email
@@ -292,19 +279,12 @@ router.post('/resend-otp', async (req, res) => {
     existing.lastSentAt = Date.now();
     otpDB.set(cleanEmail, existing);
 
-    const resendResponse = {
+    return res.json({
       success: true,
-      message: emailResult?.sandboxNotice
-        ? `A new verification code is ready! (Sandbox code: ${newOtpCode})`
-        : 'A new verification code has been sent to your email.',
+      message: 'A new verification code has been sent to your email.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
-    };
-    if (emailResult?.sandboxNotice || emailResult?.otpCode) {
-      resendResponse.devOtp = newOtpCode;
-    }
-
-    return res.json(resendResponse);
+    });
   } catch (err) {
     console.error('[Resend OTP Error]:', err);
     let userMsg = err.message || 'Failed to resend verification code.';
@@ -384,10 +364,10 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
 
-    // 5. Cryptographic Hash Comparison (supports standard colon format and legacy concatenation format)
+    // 5. Cryptographic Hash Comparison (strict SHA-256 validation)
     const testHash = crypto.createHash('sha256').update(`${cleanOtp}:${cleanEmail}`).digest('hex');
     const legacyTestHash = crypto.createHash('sha256').update(cleanOtp + cleanEmail).digest('hex');
-    const isMatch = (testHash === record.otpHash) || (legacyTestHash === record.otpHash) || (cleanOtp === '123456');
+    const isMatch = (testHash === record.otpHash) || (legacyTestHash === record.otpHash);
 
     if (!isMatch) {
       record.attempts += 1;
@@ -486,6 +466,65 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // -------------------------------------------------------------
+// UPDATE PROFILE AVATAR (AUTHENTICATED USER)
+// -------------------------------------------------------------
+router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authentication token required.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return res.status(401).json({ success: false, error: 'Session expired. Please sign in again.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No image file provided.' });
+    }
+
+    let avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    try {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const cloudUrl = await uploadToSupabaseStorage(
+        BUCKETS.AVATARS,
+        `avatars/${req.file.filename}`,
+        fileBuffer,
+        req.file.mimetype
+      );
+      if (cloudUrl) {
+        avatarUrl = cloudUrl;
+      }
+    } catch (sbErr) {
+      console.warn('[Supabase Avatar Update Fallback]:', sbErr.message);
+    }
+
+    const updatedUser = userDB.update(decoded.id, {
+      avatarUrl,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const safeUser = { ...updatedUser };
+    delete safeUser.passwordHash;
+
+    return res.json({
+      success: true,
+      message: 'Profile photo updated successfully!',
+      avatarUrl,
+      user: safeUser,
+    });
+  } catch (err) {
+    console.error('[Update Avatar Error]:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to update profile picture.' });
+  }
+});
+
+// -------------------------------------------------------------
 // FINAL STEP: Password Creation & Account Creation
 // -------------------------------------------------------------
 router.post('/create-account', async (req, res) => {
@@ -578,26 +617,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid username, email, or password.' });
     }
 
-    let isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      const fallbackHashes = [
-        '$2b$12$BFPSCjCardXbqVhr7ZashOQm0r54R1jEx8gaP/fAs.Zr6x/i84rAK',
-        '$2b$12$Flsn.CaUn9KF5UlW8F4CrO8Sx5TFF/GCIsVYaUO2wSM.EV0ysMZFe'
-      ];
-      for (const fh of fallbackHashes) {
-        if (await bcrypt.compare(password, fh)) {
-          isMatch = true;
-          userDB.update(user.id, { passwordHash: await bcrypt.hash(password, 12) });
-          break;
-        }
-      }
-    }
-    if (!isMatch && ['ADMIN', 'SUPERADMIN'].includes(user.role) && password === 'AdminPassword2026!') {
-      isMatch = true;
-    }
-    if (!isMatch && (password === 'Password123!' || password === 'Safargo2026!')) {
-      isMatch = true;
-    }
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ success: false, error: 'Invalid username, email, or password.' });
     }
