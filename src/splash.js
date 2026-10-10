@@ -161,6 +161,11 @@ export function initSplashScreen(onComplete) {
     }, { once: true });
   }
 
+  // Tap or click anywhere to immediately skip splash and proceed
+  splashScreen.addEventListener('click', () => {
+    transitionToApp();
+  }, { once: true });
+
   // Start the splash flow
   setupVideo();
 }

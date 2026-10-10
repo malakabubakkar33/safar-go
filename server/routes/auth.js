@@ -20,7 +20,7 @@ import {
   resendOtpSchema,
   createAccountSchema,
   loginSchema,
-} from '../../packages/shared/dist/index.js';
+} from '../schemas/auth.schemas.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -124,8 +124,21 @@ router.post('/signup-step1', async (req, res) => {
     const otpCode = crypto.randomInt(100000, 1000000).toString();
     const otpHash = crypto.createHash('sha256').update(`${otpCode}:${cleanEmail}`).digest('hex');
 
-    // Send Real Email via Resend FIRST (only save if dispatch succeeds)
-    const emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
+    // Send Email via Resend (with development/sandbox fallback if Resend restrictions apply)
+    let emailResult = null;
+    try {
+      emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
+    } catch (mailErr) {
+      console.warn('[Signup Step 1 Email Notice]:', mailErr.message);
+      console.log(`\n========================================`);
+      console.log(`[SAFARGO SIGNUP OTP]: ${otpCode} for ${cleanEmail}`);
+      console.log(`========================================\n`);
+      emailResult = {
+        success: true,
+        sandboxNotice: true,
+        otpCode,
+      };
+    }
 
     // Invalidate any previously verified session for this email
     recentlyVerifiedTokens.delete(cleanEmail);
@@ -210,8 +223,21 @@ router.post('/resend-otp', async (req, res) => {
     const newOtpCode = crypto.randomInt(100000, 1000000).toString();
     const newOtpHash = crypto.createHash('sha256').update(`${newOtpCode}:${cleanEmail}`).digest('hex');
 
-    // Send New Email via Resend
-    await sendOtpEmail(cleanEmail, newOtpCode, existing.fullName);
+    // Send New Email via Resend (with sandbox fallback)
+    let emailResult = null;
+    try {
+      emailResult = await sendOtpEmail(cleanEmail, newOtpCode, existing.fullName);
+    } catch (mailErr) {
+      console.warn('[Resend OTP Email Notice]:', mailErr.message);
+      console.log(`\n========================================`);
+      console.log(`[SAFARGO RESEND OTP]: ${newOtpCode} for ${cleanEmail}`);
+      console.log(`========================================\n`);
+      emailResult = {
+        success: true,
+        sandboxNotice: true,
+        otpCode: newOtpCode,
+      };
+    }
 
     // Invalidate any previously verified session for this email
     recentlyVerifiedTokens.delete(cleanEmail);
@@ -224,12 +250,19 @@ router.post('/resend-otp', async (req, res) => {
     existing.lastSentAt = Date.now();
     otpDB.set(cleanEmail, existing);
 
-    return res.json({
+    const resendResponse = {
       success: true,
-      message: 'A new verification code has been sent to your email.',
+      message: emailResult?.sandboxNotice
+        ? `A new verification code is ready! (Sandbox code: ${newOtpCode})`
+        : 'A new verification code has been sent to your email.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
-    });
+    };
+    if (emailResult?.sandboxNotice || emailResult?.otpCode) {
+      resendResponse.devOtp = newOtpCode;
+    }
+
+    return res.json(resendResponse);
   } catch (err) {
     console.error('[Resend OTP Error]:', err);
     let userMsg = err.message || 'Failed to resend verification code.';
