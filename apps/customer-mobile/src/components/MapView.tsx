@@ -3,12 +3,12 @@
  * Renders authentic OpenStreetMap / CartoDB Voyager tiles strictly bounded to Peshawar, Pakistan.
  * Features:
  * - Fixed Peshawar camera & boundaries (cannot zoom out to world view)
- * - Custom "ME" avatar marker with animated emerald pulse ring
- * - Pickup (Green) and Destination (Red) custom pin markers
+ * - Distinctive current-location navigation marker with white center, SafarGo green accents & animated soft pulse rings
+ * - Dedicated, attractive Pickup (Green) and Destination (Red) custom pin markers with label pills
  * - Driver location marker with vehicle symbol
  * - Real road route polyline with automatic padding fit
  * - Cross-platform: Native WebView (iOS/Android) and HTML5 iframe (Web) with bidirectional postMessage
- * - Floating controls: Recenter to GPS, Accessible Zoom In/Out (+/-), Service Area status pill
+ * - Floating controls: Recenter to GPS (without locking camera), Accessible Zoom In/Out (+/-), Service Area status pill
  * - Clear OSM / CARTO map attribution
  */
 
@@ -96,64 +96,86 @@ export function MapView({
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body, #map { width: 100%; height: 100%; overflow: hidden; background: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     
-    /* ME User Avatar Marker */
+    /* 1. Distinctive Navigation-Style Current Location Marker */
     .user-marker-container {
       position: relative;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .user-pulse {
+    .user-pulse-outer {
       position: absolute;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      background: rgba(22, 163, 74, 0.28);
-      animation: pulseAnim 2.2s infinite ease-out;
+      background: rgba(22, 163, 74, 0.22);
+      animation: pulseOuter 2.4s infinite ease-out;
     }
-    .user-avatar-circle {
-      position: relative;
-      width: 32px;
-      height: 32px;
+    .user-pulse-inner {
+      position: absolute;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: #16A34A;
-      border: 2.5px solid #FFFFFF;
-      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.45);
+      background: rgba(34, 197, 94, 0.28);
+      animation: pulseInner 2.4s infinite ease-out;
+    }
+    .user-center-beacon {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 3.5px solid #16A34A;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #FFFFFF;
-      font-weight: 800;
-      font-size: 13px;
       overflow: hidden;
       z-index: 2;
     }
-    .user-avatar-circle img {
+    .user-center-beacon img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .user-me-badge {
+    .user-nav-dot {
+      width: 10px;
+      height: 10px;
+      background: #16A34A;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(22, 163, 74, 0.6);
+    }
+    .user-you-badge {
       position: absolute;
-      bottom: -4px;
+      bottom: -3px;
       background: #15803D;
       color: #FFFFFF;
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 900;
-      padding: 1px 4px;
+      padding: 1px 4.5px;
       border-radius: 4px;
       border: 1px solid #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
       z-index: 3;
       letter-spacing: 0.5px;
     }
-    @keyframes pulseAnim {
-      0% { transform: scale(0.6); opacity: 0.95; }
-      100% { transform: scale(1.45); opacity: 0; }
+    @keyframes pulseOuter {
+      0% { transform: scale(0.65); opacity: 0.9; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    @keyframes pulseInner {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.2); opacity: 0.1; }
     }
 
-    /* Pickup Pin (Green) */
+    /* 2. Pickup Pin (Emerald Green) */
+    .pin-pickup-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .pin-pickup {
       width: 28px;
       height: 28px;
@@ -167,13 +189,30 @@ export function MapView({
       justify-content: center;
     }
     .pin-pickup-inner {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       background: #FFFFFF;
       border-radius: 50%;
     }
+    .pin-tag-pickup {
+      margin-top: 3px;
+      background: #15803D;
+      color: #FFFFFF;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
 
-    /* Destination Pin (Red) */
+    /* 3. Destination Pin (Ruby Red) */
+    .pin-dest-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .pin-dest {
       width: 28px;
       height: 28px;
@@ -187,13 +226,25 @@ export function MapView({
       justify-content: center;
     }
     .pin-dest-inner {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       background: #FFFFFF;
       border-radius: 50%;
     }
+    .pin-tag-dest {
+      margin-top: 3px;
+      background: #B91C1C;
+      color: #FFFFFF;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
 
-    /* Driver Vehicle Pin */
+    /* 4. Driver Vehicle Pin */
     .pin-driver {
       width: 34px;
       height: 34px;
@@ -249,27 +300,30 @@ export function MapView({
 
     // Custom Icon Creators
     function createUserIcon() {
-      var imgHtml = '${avatarUrl}' ? '<img src="${avatarUrl}" alt="ME"/>' : '${userInitial}';
+      var centerHtml = '${avatarUrl}'
+        ? '<img src="${avatarUrl}" alt="YOU"/>'
+        : '<div class="user-nav-dot"></div>';
+
       return L.divIcon({
         className: 'user-marker-leaflet',
-        html: '<div class="user-marker-container"><div class="user-pulse"></div><div class="user-avatar-circle">' + imgHtml + '</div><div class="user-me-badge">ME</div></div>',
-        iconSize: [44, 44],
-        iconAnchor: [22, 22]
+        html: '<div class="user-marker-container"><div class="user-pulse-outer"></div><div class="user-pulse-inner"></div><div class="user-center-beacon">' + centerHtml + '</div><div class="user-you-badge">YOU</div></div>',
+        iconSize: [48, 48],
+        iconAnchor: [24, 24]
       });
     }
 
     var pickupIcon = L.divIcon({
       className: 'pin-pickup-leaflet',
-      html: '<div class="pin-pickup"><div class="pin-pickup-inner"></div></div>',
-      iconSize: [28, 28],
-      iconAnchor: [14, 28]
+      html: '<div class="pin-pickup-wrap"><div class="pin-pickup"><div class="pin-pickup-inner"></div></div><div class="pin-tag-pickup">PICKUP</div></div>',
+      iconSize: [44, 46],
+      iconAnchor: [22, 28]
     });
 
     var destIcon = L.divIcon({
       className: 'pin-dest-leaflet',
-      html: '<div class="pin-dest"><div class="pin-dest-inner"></div></div>',
-      iconSize: [28, 28],
-      iconAnchor: [14, 28]
+      html: '<div class="pin-dest-wrap"><div class="pin-dest"><div class="pin-dest-inner"></div></div><div class="pin-tag-dest">DESTINATION</div></div>',
+      iconSize: [60, 46],
+      iconAnchor: [30, 28]
     });
 
     var driverIcon = L.divIcon({
@@ -368,6 +422,7 @@ export function MapView({
         var msg = JSON.parse(dataStr);
 
         if (msg.action === 'centerUser' && msg.lat && msg.lng) {
+          // Smooth recenter to real GPS position without permanently locking camera
           map.flyTo([msg.lat, msg.lng], 15, { animate: true, duration: 0.8 });
         } else if (msg.action === 'updateState') {
           updateMapState(msg.state);
@@ -519,17 +574,15 @@ const styles = StyleSheet.create({
     }),
   },
   webView: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#E2E8F0',
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   floatingControls: {
     position: 'absolute',
     right: 14,
-    bottom: 24,
-    flexDirection: 'column',
+    bottom: 16,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     zIndex: 10,
   },
   recenterButton: {
@@ -540,19 +593,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#DCFCE7',
+    borderColor: '#16A34A',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#16A34A',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.18,
+        shadowOpacity: 0.3,
         shadowRadius: 6,
       },
       android: {
         elevation: 5,
       },
       web: {
-        boxShadow: '0 3px 10px rgba(0,0,0,0.14)',
+        boxShadow: '0 3px 10px rgba(22, 163, 74, 0.28)',
       },
     }),
   },
@@ -560,7 +613,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 2.2,
+    borderWidth: 2,
     borderColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
@@ -577,17 +630,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     overflow: 'hidden',
-    width: 38,
-    alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.14,
+        shadowOpacity: 0.12,
         shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
       web: {
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -601,13 +652,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   zoomText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1E293B',
-    lineHeight: 22,
+    color: '#334155',
+    lineHeight: 20,
   },
   zoomDivider: {
-    width: '75%',
     height: 1,
     backgroundColor: '#F1F5F9',
   },
@@ -617,26 +667,26 @@ const styles = StyleSheet.create({
     left: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.94)',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 20,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DCFCE7',
+    borderColor: '#E2E8F0',
+    gap: 6,
     zIndex: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
       },
       android: {
         elevation: 2,
       },
       web: {
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
       },
     }),
   },
@@ -647,9 +697,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
   },
   peshawarBadgeText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#15803D',
-    letterSpacing: 0.3,
+    color: '#0F172A',
+    letterSpacing: 0.2,
   },
 });

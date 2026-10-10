@@ -1,9 +1,12 @@
 /**
  * SafarGo Customer Mobile - Premium Map-First Home Screen
  * Redesigned for Peshawar, Pakistan.
- * Includes: Compact responsive header, medium-height interactive map (~41% of screen),
- * real GPS via expo-location with graceful permission & disabled recovery, custom "ME" avatar marker,
- * geofence validation, WhereToCard, and clean quick actions.
+ * Layout Order:
+ * 1. Header with logo (left), flexible empty space (center), profile & hamburger menu (right).
+ * 2. Well-sized interactive map focused on Peshawar (~41% screen height).
+ * 3. Floating current-location recenter control on the map.
+ * 4. Attractive destination-search card below the map.
+ * 5. Compact quick shortcuts and useful ride actions.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -29,6 +32,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useRideStore } from '../../src/store/rideStore';
 import { api } from '../../src/services/api';
 import { GeocodingService } from '../../src/services/geospatialServices';
+import { RoutingService } from '../../src/services/routingService';
 import {
   PESHAWAR_CENTER,
   isWithinPeshawar,
@@ -54,11 +58,13 @@ export default function HomeScreen() {
 
   const pickup = useRideStore((s) => s.pickup);
   const destination = useRideStore((s) => s.destination);
+  const route = useRideStore((s) => s.route);
   const activeRide = useRideStore((s) => s.activeRide);
   const vehicleType = useRideStore((s) => s.vehicleType);
   const setActiveRide = useRideStore((s) => s.setActiveRide);
   const setPickup = useRideStore((s) => s.setPickup);
   const setDestination = useRideStore((s) => s.setDestination);
+  const setRoute = useRideStore((s) => s.setRoute);
   const setVehicleType = useRideStore((s) => s.setVehicleType);
 
   // 1. Acquire Real GPS Location
@@ -128,6 +134,15 @@ export default function HomeScreen() {
       .catch(() => {});
   }, [requestGpsLocation, setActiveRide]);
 
+  // Recalculate route if pickup and destination exist but route is missing
+  useEffect(() => {
+    if (pickup?.lat && destination?.lat && !route) {
+      RoutingService.getRoute(pickup.lat, pickup.lng, destination.lat, destination.lng)
+        .then((r) => setRoute(r))
+        .catch(() => {});
+    }
+  }, [pickup, destination, route, setRoute]);
+
   // Handle Recentering
   const handleCenterUser = () => {
     if (!userLocation) {
@@ -135,7 +150,7 @@ export default function HomeScreen() {
     }
   };
 
-  // Open Search Flow
+  // Open Full-Screen Search Flow
   const handleOpenSearch = (field: 'pickup' | 'destination' = 'destination') => {
     router.push({
       pathname: '/(main)/search',
@@ -151,18 +166,39 @@ export default function HomeScreen() {
     setPickup(oldDest);
     setDestination(oldPickup);
     setCurrentAddress(oldDest.address);
+
+    // Recalculate route in reverse direction
+    RoutingService.getRoute(oldDest.lat, oldDest.lng, oldPickup.lat, oldPickup.lng)
+      .then((r) => setRoute(r))
+      .catch(() => {});
   };
 
   // Select Quick Peshawar Place
-  const handleSelectQuickPlace = (place: QuickPlace) => {
-    setDestination({
+  const handleSelectQuickPlace = async (place: QuickPlace) => {
+    const destPoint = {
       address: place.address,
       lat: place.lat,
       lng: place.lng,
       name: place.title,
       city: 'Peshawar',
-    });
+    };
+    setDestination(destPoint);
+
+    const pLat = pickup?.lat || userLocation?.lat || PESHAWAR_CENTER.lat;
+    const pLng = pickup?.lng || userLocation?.lng || PESHAWAR_CENTER.lng;
+
+    try {
+      const routeData = await RoutingService.getRoute(pLat, pLng, place.lat, place.lng);
+      setRoute(routeData);
+    } catch {}
+
     router.push('/(main)/route-preview');
+  };
+
+  // Clear Destination
+  const handleClearDestination = () => {
+    setDestination(null);
+    setRoute(null);
   };
 
   // Resume In-Flight Ride
@@ -188,7 +224,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      {/* 1. Compact Responsive Header */}
+      {/* 1. Header with Logo (Left), Flexible Space (Center), Profile & 2-Line Hamburger (Right) */}
       <Header
         onOpenMenu={() => setIsDrawerOpen(true)}
         onPressProfile={() => router.push('/(main)/profile')}
@@ -260,7 +296,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* 2. Medium-Height Interactive Map (Peshawar Bounded) */}
+        {/* 2. Well-Sized Interactive Map (Peshawar Bounded) with 3. Floating Recenter Control */}
         <View style={[styles.mapWrapper, { height: mapHeight }]}>
           <MapView
             userLocation={userLocation}
@@ -268,6 +304,8 @@ export default function HomeScreen() {
             destinationLocation={
               destination ? { lat: destination.lat, lng: destination.lng } : null
             }
+            routeCoordinates={route?.coordinates}
+            vehicleType={vehicleType}
             height={mapHeight}
             onCenterUser={handleCenterUser}
           />
@@ -291,7 +329,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* 3. Redesigned Pickup & Destination Card */}
+        {/* 4. Attractive Destination-Search Card Below Map */}
         <WhereToCard
           pickupAddress={pickup?.address || currentAddress}
           destinationAddress={destination?.address}
@@ -301,7 +339,46 @@ export default function HomeScreen() {
           onSelectQuickPlace={handleSelectQuickPlace}
         />
 
-        {/* 4. Quick Actions & Ride Preferences */}
+        {/* Route Active Callout Card (When Destination & Route are Chosen) */}
+        {destination && (
+          <View style={styles.routeActiveCard}>
+            <View style={styles.routeHeaderRow}>
+              <View style={styles.routeTag}>
+                <Text style={styles.routeTagText}>ROUTE READY</Text>
+              </View>
+              <TouchableOpacity onPress={handleClearDestination} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.clearRouteText}>✕ Clear</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.routeMetricsRow}>
+              <View style={styles.routeMetricItem}>
+                <Text style={styles.routeMetricLabel}>Distance</Text>
+                <Text style={styles.routeMetricValue}>{route?.distanceKm ? `${route.distanceKm} km` : '...'}</Text>
+              </View>
+              <View style={styles.routeMetricDivider} />
+              <View style={styles.routeMetricItem}>
+                <Text style={styles.routeMetricLabel}>Est. Travel Time</Text>
+                <Text style={styles.routeMetricValue}>{route?.durationMins ? `${route.durationMins} mins` : '...'}</Text>
+              </View>
+              <View style={styles.routeMetricDivider} />
+              <View style={styles.routeMetricItem}>
+                <Text style={styles.routeMetricLabel}>City Traffic</Text>
+                <Text style={styles.routeMetricValueTraffic}>Moderate</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.viewRouteBtn}
+              onPress={() => router.push('/(main)/route-preview')}
+              activeOpacity={0.88}
+            >
+              <Text style={styles.viewRouteBtnText}>Proceed to Vehicle Selection →</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 5. Compact Quick Shortcuts & Useful Ride Actions */}
         <View style={styles.quickActionsContainer}>
           {/* Vehicle Preference Selector */}
           <View style={styles.vehicleTypeSelector}>
@@ -388,11 +465,11 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* 5. Animated Navigation Drawer */}
+      {/* Smooth Navigation Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onNavigate={(route) => router.push(route as any)}
+        onNavigate={(routePath) => router.push(routePath as any)}
       />
     </SafeAreaView>
   );
@@ -483,9 +560,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mapWrapper: {
-    position: 'relative',
     width: '100%',
-    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   activeRideBanner: {
     position: 'absolute',
@@ -494,16 +571,16 @@ const styles = StyleSheet.create({
     right: 14,
     backgroundColor: '#0F172A',
     borderRadius: 14,
-    paddingHorizontal: 14,
     paddingVertical: 10,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
-    zIndex: 20,
+    zIndex: 10,
   },
   pulseIndicator: {
     width: 10,
@@ -523,16 +600,110 @@ const styles = StyleSheet.create({
   activeRideSubtitle: {
     color: '#94A3B8',
     fontSize: 11,
-    marginTop: 1,
+    marginTop: 2,
   },
   activeRideArrow: {
     color: '#22C55E',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '800',
+    marginLeft: 8,
+  },
+  routeActiveCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#16A34A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 10px rgba(22, 163, 74, 0.08)',
+      },
+    }),
+  },
+  routeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  routeTag: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  routeTagText: {
+    color: '#15803D',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  clearRouteText: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  routeMetricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+  },
+  routeMetricItem: {
+    alignItems: 'center',
+  },
+  routeMetricLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  routeMetricValue: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  routeMetricValueTraffic: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#16A34A',
+    marginTop: 2,
+  },
+  routeMetricDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E2E8F0',
+  },
+  viewRouteBtn: {
+    backgroundColor: '#16A34A',
+    borderRadius: 12,
+    paddingVertical: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewRouteBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
     fontWeight: '800',
   },
   quickActionsContainer: {
     paddingHorizontal: 16,
-    paddingTop: 14,
+    marginTop: 12,
     gap: 12,
   },
   vehicleTypeSelector: {
@@ -543,13 +714,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    gap: 10,
   },
   vehiclePillActive: {
     borderColor: '#16A34A',
@@ -560,20 +731,19 @@ const styles = StyleSheet.create({
   },
   vehiclePillTitle: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#1E293B',
+    fontWeight: '700',
+    color: '#475569',
   },
   vehiclePillTitleActive: {
     color: '#15803D',
   },
   vehiclePillSub: {
     fontSize: 10.5,
-    color: '#64748B',
+    color: '#94A3B8',
     marginTop: 1,
   },
   shortcutsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 10,
   },
   shortcutCard: {
@@ -581,19 +751,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 6,
+    borderColor: '#F1F5F9',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
       },
       android: {
         elevation: 1,
+      },
+      web: {
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
       },
     }),
   },
@@ -604,6 +777,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 6,
   },
   shortcutIcon: {
     fontSize: 16,
@@ -612,5 +786,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#334155',
+    textAlign: 'center',
   },
 });

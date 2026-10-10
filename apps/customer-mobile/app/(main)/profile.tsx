@@ -46,8 +46,8 @@ export default function ProfileScreen() {
       const res = await api.savePlace({
         label: newLabel,
         address: newAddress.trim(),
-        lat: 31.5204 + (Math.random() - 0.5) * 0.04,
-        lng: 74.3587 + (Math.random() - 0.5) * 0.04,
+        lat: 34.0151 + (Math.random() - 0.5) * 0.02,
+        lng: 71.5249 + (Math.random() - 0.5) * 0.02,
       });
 
       if (res.success && res.place) {
