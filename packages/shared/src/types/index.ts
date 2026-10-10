@@ -37,6 +37,7 @@ export interface SignupStep1Response {
   message: string;
   emailMasked: string;
   cooldownSeconds: number;
+  devOtp?: string;
 }
 
 export interface VerifyOtpResponse {
@@ -50,6 +51,7 @@ export interface ResendOtpResponse {
   message: string;
   emailMasked: string;
   cooldownSeconds: number;
+  devOtp?: string;
 }
 
 export interface AvatarUploadResponse {

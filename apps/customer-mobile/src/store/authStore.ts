@@ -16,6 +16,7 @@ export interface SignupFlowState {
   avatarUri: string | null;
   avatarUrl: string | null;
   cooldownSeconds: number;
+  devOtp?: string;
 }
 
 interface AuthStoreState {
@@ -34,6 +35,7 @@ interface AuthStoreState {
     username: string;
     emailMasked: string;
     cooldownSeconds: number;
+    devOtp?: string;
   }) => void;
   setVerificationToken: (token: string) => void;
   setAvatar: (avatarUri: string, avatarUrl?: string) => void;
