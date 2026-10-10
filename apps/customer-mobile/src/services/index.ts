@@ -1,11 +1,13 @@
 /**
- * SafarGo - Modular Geospatial Engineering Services
- * Clean provider architecture for Geocoding, Place Search, Map Config, and Routing
+ * SafarGo - Central Services Export
  */
 
-export * from './serviceAreaService';
+export * from './api';
 export * from './locationService';
 export * from './geocodingService';
 export * from './placeSearchService';
 export * from './routingService';
+export * from './serviceAreaService';
 export * from './mapService';
+export * from './geospatialServices';
+export * from './socket';

@@ -1,14 +1,21 @@
 /**
  * SafarGo Customer Mobile - Real Peshawar Interactive Map Component
- * Renders authentic OpenStreetMap / CartoDB tiles with Peshawar bounding constraints,
- * Custom User "ME" avatar marker with emerald pulse ring, pickup/dest pins, and real OSRM polyline.
- * Cross-platform: Uses WebView on native iOS/Android and seamless iframe on Web.
+ * Renders authentic OpenStreetMap / CartoDB Voyager tiles strictly bounded to Peshawar, Pakistan.
+ * Features:
+ * - Fixed Peshawar camera & boundaries (cannot zoom out to world view)
+ * - Custom "ME" avatar marker with animated emerald pulse ring
+ * - Pickup (Green) and Destination (Red) custom pin markers
+ * - Driver location marker with vehicle symbol
+ * - Real road route polyline with automatic padding fit
+ * - Cross-platform: Native WebView (iOS/Android) and HTML5 iframe (Web) with bidirectional postMessage
+ * - Floating controls: Recenter to GPS, Accessible Zoom In/Out (+/-), Service Area status pill
+ * - Clear OSM / CARTO map attribution
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Platform, Dimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { PESHAWAR_CENTER, PESHAWAR_MAP_CONFIG } from '../services/peshawarGeofence';
+import { PESHAWAR_CENTER, PESHAWAR_MAP_CONFIG, isWithinPeshawar } from '../services/peshawarGeofence';
 import { useAuthStore } from '../store/authStore';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -43,18 +50,44 @@ export function MapView({
   onMapReady,
 }: MapViewProps) {
   const webViewRef = useRef<any>(null);
+  const iframeRef = useRef<any>(null);
   const user = useAuthStore((s) => s.user);
 
-  const initialLat = pickupLocation?.lat || userLocation?.lat || PESHAWAR_CENTER.lat;
-  const initialLng = pickupLocation?.lng || userLocation?.lng || PESHAWAR_CENTER.lng;
+  // Validate initial center: Use pickup if in Peshawar, else user location if in Peshawar, else Peshawar Saddar
+  const getInitialCoords = () => {
+    if (pickupLocation && isWithinPeshawar(pickupLocation.lat, pickupLocation.lng)) {
+      return { lat: pickupLocation.lat, lng: pickupLocation.lng };
+    }
+    if (userLocation && isWithinPeshawar(userLocation.lat, userLocation.lng)) {
+      return { lat: userLocation.lat, lng: userLocation.lng };
+    }
+    return { lat: PESHAWAR_CENTER.lat, lng: PESHAWAR_CENTER.lng };
+  };
 
-  // Prepare HTML document with Leaflet and CartoDB Voyager tiles
+  const initialCoords = getInitialCoords();
   const avatarUrl = user?.avatarUrl && !user.avatarUrl.includes('safargo-symbol') ? user.avatarUrl : '';
   const userInitial = (user?.fullName || user?.username || 'U').charAt(0).toUpperCase();
 
+  // Cross-platform message dispatcher to map canvas
+  const postMessageToMap = useCallback((payload: object) => {
+    const jsonStr = JSON.stringify(payload);
+    if (Platform.OS === 'web') {
+      try {
+        if (iframeRef.current?.contentWindow) {
+          iframeRef.current.contentWindow.postMessage(jsonStr, '*');
+        }
+      } catch (err) {
+        console.warn('[MapView] Web iframe postMessage failed:', err);
+      }
+    } else {
+      webViewRef.current?.postMessage?.(jsonStr);
+    }
+  }, []);
+
+  // HTML5 Map Document using Leaflet 1.9.4 & CartoDB Voyager tiles
   const mapHtml = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -77,8 +110,8 @@ export function MapView({
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: rgba(22, 163, 74, 0.25);
-      animation: pulseAnim 2s infinite ease-out;
+      background: rgba(22, 163, 74, 0.28);
+      animation: pulseAnim 2.2s infinite ease-out;
     }
     .user-avatar-circle {
       position: relative;
@@ -116,11 +149,11 @@ export function MapView({
       letter-spacing: 0.5px;
     }
     @keyframes pulseAnim {
-      0% { transform: scale(0.7); opacity: 0.9; }
-      100% { transform: scale(1.4); opacity: 0; }
+      0% { transform: scale(0.6); opacity: 0.95; }
+      100% { transform: scale(1.45); opacity: 0; }
     }
 
-    /* Pickup Pin */
+    /* Pickup Pin (Green) */
     .pin-pickup {
       width: 28px;
       height: 28px;
@@ -128,7 +161,7 @@ export function MapView({
       border: 2.5px solid #FFFFFF;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.5);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -140,7 +173,7 @@ export function MapView({
       border-radius: 50%;
     }
 
-    /* Destination Pin */
+    /* Destination Pin (Red) */
     .pin-dest {
       width: 28px;
       height: 28px;
@@ -148,7 +181,7 @@ export function MapView({
       border: 2.5px solid #FFFFFF;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      box-shadow: 0 4px 10px rgba(220,38,38,0.4);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -162,22 +195,24 @@ export function MapView({
 
     /* Driver Vehicle Pin */
     .pin-driver {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       background: #0F172A;
       border: 2px solid #16A34A;
       border-radius: 50%;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.35);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 17px;
     }
 
+    /* Map Attribution */
     .leaflet-control-attribution {
-      font-size: 8px !important;
-      background: rgba(255,255,255,0.7) !important;
-      padding: 1px 4px !important;
+      font-size: 9px !important;
+      background: rgba(255,255,255,0.85) !important;
+      padding: 2px 6px !important;
+      border-top-left-radius: 4px !important;
     }
   </style>
 </head>
@@ -188,31 +223,31 @@ export function MapView({
     var map;
     var userMarker, pickupMarker, destMarker, driverMarker, routeLayer;
 
-    // Peshawar Bounding limits
+    // Strict Peshawar Bounding Limits: users cannot pan or zoom out to the world
     var pshBounds = L.latLngBounds(
       L.latLng(${PESHAWAR_MAP_CONFIG.bounds[0][0]}, ${PESHAWAR_MAP_CONFIG.bounds[0][1]}),
       L.latLng(${PESHAWAR_MAP_CONFIG.bounds[1][0]}, ${PESHAWAR_MAP_CONFIG.bounds[1][1]})
     );
 
-    // Initialize map
+    // Initialize map focused strictly on Peshawar
     map = L.map('map', {
-      center: [${initialLat}, ${initialLng}],
+      center: [${initialCoords.lat}, ${initialCoords.lng}],
       zoom: ${PESHAWAR_MAP_CONFIG.defaultZoom},
       minZoom: ${PESHAWAR_MAP_CONFIG.minZoom},
       maxZoom: ${PESHAWAR_MAP_CONFIG.maxZoom},
       maxBounds: pshBounds,
-      maxBoundsViscosity: 0.9,
+      maxBoundsViscosity: 1.0, // Hard ceiling prevents scrolling beyond Peshawar
       zoomControl: false,
       attributionControl: true
     });
 
-    // Real OpenStreetMap & CartoDB Voyager tiles
+    // Real, licensed CARTO Voyager & OpenStreetMap tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
-    // ME User Marker Icon
+    // Custom Icon Creators
     function createUserIcon() {
       var imgHtml = '${avatarUrl}' ? '<img src="${avatarUrl}" alt="ME"/>' : '${userInitial}';
       return L.divIcon({
@@ -223,7 +258,6 @@ export function MapView({
       });
     }
 
-    // Custom Pins
     var pickupIcon = L.divIcon({
       className: 'pin-pickup-leaflet',
       html: '<div class="pin-pickup"><div class="pin-pickup-inner"></div></div>',
@@ -240,15 +274,17 @@ export function MapView({
 
     var driverIcon = L.divIcon({
       className: 'pin-driver-leaflet',
-      html: '<div class="pin-driver">🚗</div>',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
+      html: '<div class="pin-driver">${vehicleType === 'CAR' ? '🚗' : '🏍️'}</div>',
+      iconSize: [34, 34],
+      iconAnchor: [17, 17]
     });
 
-    // Update markers and route
+    // Update map markers and route coordinates
     function updateMapState(state) {
+      if (!state) return;
+
       // 1. User Position
-      if (state.userLocation && state.userLocation.lat) {
+      if (state.userLocation && state.userLocation.lat && state.userLocation.lng) {
         if (!userMarker) {
           userMarker = L.marker([state.userLocation.lat, state.userLocation.lng], { icon: createUserIcon() }).addTo(map);
         } else {
@@ -256,8 +292,8 @@ export function MapView({
         }
       }
 
-      // 2. Pickup
-      if (state.pickupLocation && state.pickupLocation.lat) {
+      // 2. Pickup Location
+      if (state.pickupLocation && state.pickupLocation.lat && state.pickupLocation.lng) {
         if (!pickupMarker) {
           pickupMarker = L.marker([state.pickupLocation.lat, state.pickupLocation.lng], { icon: pickupIcon }).addTo(map);
         } else {
@@ -268,8 +304,8 @@ export function MapView({
         pickupMarker = null;
       }
 
-      // 3. Destination
-      if (state.destinationLocation && state.destinationLocation.lat) {
+      // 3. Destination Location
+      if (state.destinationLocation && state.destinationLocation.lat && state.destinationLocation.lng) {
         if (!destMarker) {
           destMarker = L.marker([state.destinationLocation.lat, state.destinationLocation.lng], { icon: destIcon }).addTo(map);
         } else {
@@ -280,7 +316,19 @@ export function MapView({
         destMarker = null;
       }
 
-      // 4. Route Polyline
+      // 4. Driver Location
+      if (state.driverLocation && state.driverLocation.lat && state.driverLocation.lng) {
+        if (!driverMarker) {
+          driverMarker = L.marker([state.driverLocation.lat, state.driverLocation.lng], { icon: driverIcon }).addTo(map);
+        } else {
+          driverMarker.setLatLng([state.driverLocation.lat, state.driverLocation.lng]);
+        }
+      } else if (driverMarker) {
+        map.removeLayer(driverMarker);
+        driverMarker = null;
+      }
+
+      // 5. Road Route Polyline
       if (state.routeCoordinates && state.routeCoordinates.length > 1) {
         var latlngs = state.routeCoordinates.map(function(c) { return [c.lat, c.lng]; });
         if (routeLayer) {
@@ -289,19 +337,22 @@ export function MapView({
         routeLayer = L.polyline(latlngs, {
           color: '#16A34A',
           weight: 5,
-          opacity: 0.9,
+          opacity: 0.92,
           lineJoin: 'round',
           lineCap: 'round'
         }).addTo(map);
 
-        map.fitBounds(routeLayer.getBounds(), { padding: [35, 35] });
+        // Fit camera to full route with comfortable padding
+        try {
+          map.fitBounds(routeLayer.getBounds(), { padding: [36, 36], maxZoom: 16 });
+        } catch(e) {}
       } else if (routeLayer) {
         map.removeLayer(routeLayer);
         routeLayer = null;
       }
     }
 
-    // Initial render call
+    // Initial render
     updateMapState(${JSON.stringify({
       userLocation,
       pickupLocation,
@@ -310,10 +361,12 @@ export function MapView({
       routeCoordinates,
     })});
 
-    // Camera control messages from React Native
-    window.addEventListener('message', function(event) {
+    // Message receiver for Web (window) and React Native (document)
+    function handleIncomingMessage(event) {
       try {
-        var msg = JSON.parse(event.data);
+        var dataStr = typeof event.data === 'string' ? event.data : JSON.stringify(event.data);
+        var msg = JSON.parse(dataStr);
+
         if (msg.action === 'centerUser' && msg.lat && msg.lng) {
           map.flyTo([msg.lat, msg.lng], 15, { animate: true, duration: 0.8 });
         } else if (msg.action === 'updateState') {
@@ -322,65 +375,66 @@ export function MapView({
           map.zoomIn();
         } else if (msg.action === 'zoomOut') {
           map.zoomOut();
+        } else if (msg.action === 'resetPeshawar') {
+          map.flyTo([${PESHAWAR_CENTER.lat}, ${PESHAWAR_CENTER.lng}], ${PESHAWAR_MAP_CONFIG.defaultZoom}, { animate: true, duration: 0.8 });
         }
       } catch(e) {}
-    });
+    }
 
-    document.addEventListener('message', function(event) {
-      window.dispatchEvent(new MessageEvent('message', { data: event.data }));
-    });
+    window.addEventListener('message', handleIncomingMessage);
+    document.addEventListener('message', handleIncomingMessage);
   </script>
 </body>
 </html>
   `;
 
-  // Sync state changes with the running map
+  // Sync state changes with the running map canvas
   useEffect(() => {
-    if (webViewRef.current) {
-      const payload = JSON.stringify({
-        action: 'updateState',
-        state: {
-          userLocation,
-          pickupLocation,
-          destinationLocation,
-          driverLocation,
-          routeCoordinates,
-        },
-      });
-      webViewRef.current.postMessage?.(payload);
-    }
-  }, [userLocation, pickupLocation, destinationLocation, routeCoordinates]);
+    postMessageToMap({
+      action: 'updateState',
+      state: {
+        userLocation,
+        pickupLocation,
+        destinationLocation,
+        driverLocation,
+        routeCoordinates,
+      },
+    });
+  }, [userLocation, pickupLocation, destinationLocation, driverLocation, routeCoordinates, postMessageToMap]);
 
+  // Recenter button action
   const handleCenterUser = () => {
-    if (userLocation && webViewRef.current) {
-      webViewRef.current.postMessage?.(
-        JSON.stringify({
-          action: 'centerUser',
-          lat: userLocation.lat,
-          lng: userLocation.lng,
-        })
-      );
+    if (userLocation && isWithinPeshawar(userLocation.lat, userLocation.lng)) {
+      postMessageToMap({
+        action: 'centerUser',
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+      });
+    } else {
+      // If user location is outside Peshawar or not available, center on Peshawar city center
+      postMessageToMap({ action: 'resetPeshawar' });
     }
     onCenterUser?.();
   };
 
   const handleZoomIn = () => {
-    webViewRef.current?.postMessage?.(JSON.stringify({ action: 'zoomIn' }));
+    postMessageToMap({ action: 'zoomIn' });
   };
 
   const handleZoomOut = () => {
-    webViewRef.current?.postMessage?.(JSON.stringify({ action: 'zoomOut' }));
+    postMessageToMap({ action: 'zoomOut' });
   };
 
   return (
     <View style={[styles.container, { height }]}>
       {/* Real Interactive Map Canvas */}
       {Platform.OS === 'web' ? (
-        // iframe for web compatibility
         <iframe
+          ref={iframeRef}
           srcDoc={mapHtml}
           style={{ width: '100%', height: '100%', border: 'none' } as any}
           onLoad={() => onMapReady?.()}
+          title="SafarGo Peshawar Map"
         />
       ) : (
         <WebView
@@ -398,31 +452,41 @@ export function MapView({
 
       {/* Floating Map Controls */}
       <View style={styles.floatingControls}>
-        {/* My Location Button */}
+        {/* Recenter Button */}
         <TouchableOpacity
           style={styles.recenterButton}
           onPress={handleCenterUser}
           activeOpacity={0.8}
-          accessibilityLabel="Recenter to My Location"
+          accessibilityLabel="Recenter to My Location in Peshawar"
         >
           <View style={styles.recenterOuter}>
             <View style={styles.recenterDot} />
           </View>
         </TouchableOpacity>
 
-        {/* Zoom In/Out Buttons */}
+        {/* Zoom Controls */}
         <View style={styles.zoomGroup}>
-          <TouchableOpacity style={styles.zoomBtn} onPress={handleZoomIn} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.zoomBtn}
+            onPress={handleZoomIn}
+            activeOpacity={0.7}
+            accessibilityLabel="Zoom In"
+          >
             <Text style={styles.zoomText}>+</Text>
           </TouchableOpacity>
           <View style={styles.zoomDivider} />
-          <TouchableOpacity style={styles.zoomBtn} onPress={handleZoomOut} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.zoomBtn}
+            onPress={handleZoomOut}
+            activeOpacity={0.7}
+            accessibilityLabel="Zoom Out"
+          >
             <Text style={styles.zoomText}>−</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Peshawar City Badge */}
+      {/* Peshawar Operating Area Badge */}
       <View style={styles.peshawarBadge}>
         <View style={styles.liveGreenDot} />
         <Text style={styles.peshawarBadgeText}>Peshawar Service Area</Text>
@@ -437,8 +501,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
     position: 'relative',
     overflow: 'hidden',
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -450,7 +514,7 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
       },
     }),
   },
@@ -462,31 +526,41 @@ const styles = StyleSheet.create({
   floatingControls: {
     position: 'absolute',
     right: 14,
-    bottom: 14,
-    gap: 8,
+    bottom: 24,
+    flexDirection: 'column',
     alignItems: 'center',
+    gap: 10,
     zIndex: 10,
   },
   recenterButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.5,
+    borderColor: '#DCFCE7',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '0 3px 10px rgba(0,0,0,0.14)',
+      },
+    }),
   },
   recenterOuter: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 2,
+    borderWidth: 2.2,
     borderColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
@@ -499,31 +573,43 @@ const styles = StyleSheet.create({
   },
   zoomGroup: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
     overflow: 'hidden',
+    width: 38,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.14,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+    }),
   },
   zoomBtn: {
-    width: 36,
-    height: 34,
+    width: 38,
+    height: 38,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  zoomDivider: {
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
   zoomText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#334155',
-    lineHeight: 20,
+    color: '#1E293B',
+    lineHeight: 22,
+  },
+  zoomDivider: {
+    width: '75%',
+    height: 1,
+    backgroundColor: '#F1F5F9',
   },
   peshawarBadge: {
     position: 'absolute',
@@ -532,13 +618,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#DCFCE7',
     zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+      },
+    }),
   },
   liveGreenDot: {
     width: 7,
@@ -547,9 +647,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
   },
   peshawarBadgeText: {
-    fontSize: 10.5,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     color: '#15803D',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
 });

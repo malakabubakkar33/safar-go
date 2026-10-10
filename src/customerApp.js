@@ -17,8 +17,8 @@ let selectedVehicleType = 'BIKE';
 let selectedOffer = null;
 let currentRating = 5;
 
-let pickupCoords = { lat: 31.5204, lng: 74.3587, address: 'Gulberg III, Lahore' };
-let destCoords = { lat: 31.4682, lng: 74.2678, address: 'Emporium Mall, Johar Town, Lahore' };
+let pickupCoords = { lat: 34.0151, lng: 71.5249, address: 'Saddar Road, Peshawar Cantonment' };
+let destCoords = { lat: 33.9892, lng: 71.4367, address: 'Phase 3 / Tatara Park, Hayatabad, Peshawar' };
 let currentRouteData = null;
 
 function authHeaders(isJson = true) {
@@ -169,14 +169,27 @@ function initMap() {
     return;
   }
 
+  const pshBounds = [
+    [33.8800, 71.3900], // Southwest bounds (Kohat / Ring road)
+    [34.1400, 71.6800], // Northeast bounds (Warsak / Chamkani)
+  ];
+
   map = window.L.map('cust-leaflet-map', {
     zoomControl: false,
-    attributionControl: false,
+    attributionControl: true,
+    minZoom: 12,
+    maxZoom: 18,
+    maxBounds: pshBounds,
+    maxBoundsViscosity: 1.0,
   }).setView([pickupCoords.lat, pickupCoords.lng], 14);
 
-  // Modern clean OpenStreetMap tiles
-  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Modern clean CARTO Voyager tiles with attribution
+  window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd',
+    minZoom: 12,
     maxZoom: 19,
+    bounds: pshBounds,
   }).addTo(map);
 
   // Pickup marker
@@ -471,9 +484,9 @@ function setupLocationSearchSheet() {
 
       searchDebounceTimer = setTimeout(async () => {
         try {
-          const res = await fetch(`/api/locations/search?q=${encodeURIComponent(q)}&lat=${pickupCoords.lat}&lng=${pickupCoords.lng}`);
+          const res = await fetch(`/api/locations/search?q=${encodeURIComponent(q)}&lat=${pickupCoords.lat}&lng=${pickupCoords.lng}&userLat=${pickupCoords.lat}&userLng=${pickupCoords.lng}`);
           const data = await res.json();
-          renderSearchResults(data.places || []);
+          renderSearchResults(data.results || data.places || []);
         } catch (err) {
           console.error('Search error:', err);
         }
@@ -497,8 +510,8 @@ function renderSearchResults(places) {
       <div class="cust-result-item" data-lat="${p.lat}" data-lng="${p.lng}" data-addr="${p.address}">
         <span class="cust-result-icon">📍</span>
         <div class="cust-result-text">
-          <strong>${p.name || p.address.split(',')[0]}</strong>
-          <small>${p.address}</small>
+          <strong>${p.name || p.title || p.address.split(',')[0]}</strong>
+          <small>${p.address}${p.distanceKm ? ` &bull; ${p.distanceKm} km` : ''}</small>
         </div>
       </div>
     `

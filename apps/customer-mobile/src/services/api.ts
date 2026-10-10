@@ -16,7 +16,17 @@ import {
 } from '@safargo/shared';
 import { useAuthStore } from '../store/authStore';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+const getBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/api`;
+  }
+  return 'http://localhost:4000/api';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -104,43 +114,7 @@ class ApiService {
     });
   }
 
-  // Location & Geocoding Endpoints
-  async searchLocations(query: string): Promise<{ results: Array<{ id: string; title: string; address: string; lat: number; lng: number; city: string }> }> {
-    return this.request(`/locations/search?q=${encodeURIComponent(query)}`);
-  }
 
-  async reverseGeocode(lat: number, lng: number): Promise<{ address: string; city: string; name: string }> {
-    return this.request(`/locations/reverse?lat=${lat}&lng=${lng}`);
-  }
-
-  async calculateRoute(pickupLat: number, pickupLng: number, destLat: number, destLng: number): Promise<{
-    success: boolean;
-    distanceKm: number;
-    durationMins: number;
-    coordinates: Array<{ lat: number; lng: number }>;
-  }> {
-    return this.request('/locations/route', {
-      method: 'POST',
-      body: JSON.stringify({ pickupLat, pickupLng, destLat, destLng }),
-    });
-  }
-
-  async getSavedPlaces(): Promise<{ places: Array<{ id: string; label: string; address: string; lat: number; lng: number }> }> {
-    return this.request('/locations/saved');
-  }
-
-  async savePlace(place: { label: string; address: string; lat: number; lng: number }): Promise<{ success: boolean; place: any }> {
-    return this.request('/locations/saved', {
-      method: 'POST',
-      body: JSON.stringify(place),
-    });
-  }
-
-  async deleteSavedPlace(id: string): Promise<{ success: boolean }> {
-    return this.request(`/locations/saved/${id}`, {
-      method: 'DELETE',
-    });
-  }
 
   // Ride Booking Endpoints
   async estimateFare(pickupLat: number, pickupLng: number, destLat: number, destLng: number): Promise<{
@@ -242,6 +216,101 @@ class ApiService {
     return this.request(`/rides/${rideId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content, type, amount }),
+    });
+  }
+
+  // -------------------------------------------------------------
+  // Location, Geocoding & Routing Endpoints
+  // -------------------------------------------------------------
+  async getServiceArea(): Promise<{
+    supportedCity: string;
+    serviceBounds: { minLat: number; maxLat: number; minLng: number; maxLng: number; centerLat: number; centerLng: number };
+    center: { lat: number; lng: number; name: string; address: string };
+    message: string;
+    categories: string[];
+  }> {
+    return this.request('/locations/service-area');
+  }
+
+  async searchLocations(
+    query: string,
+    category?: string,
+    userLat?: number,
+    userLng?: number
+  ): Promise<{
+    results: Array<{
+      id: string;
+      title: string;
+      address: string;
+      lat: number;
+      lng: number;
+      city?: string;
+      category?: string;
+      distanceKm?: number;
+      isWithinServiceArea?: boolean;
+    }>;
+  }> {
+    const params = new URLSearchParams({ q: query });
+    if (category) params.append('category', category);
+    if (userLat != null && userLng != null) {
+      params.append('userLat', String(userLat));
+      params.append('userLng', String(userLng));
+    }
+    return this.request(`/locations/search?${params.toString()}`);
+  }
+
+  async reverseGeocode(
+    lat: number,
+    lng: number
+  ): Promise<{
+    address: string;
+    name?: string;
+    city?: string;
+    category?: string;
+    lat: number;
+    lng: number;
+    isWithinServiceArea: boolean;
+  }> {
+    return this.request(`/locations/reverse?lat=${lat}&lng=${lng}`);
+  }
+
+  async calculateRoute(
+    pickupLat: number,
+    pickupLng: number,
+    destLat: number,
+    destLng: number
+  ): Promise<{
+    success: boolean;
+    distanceKm: number;
+    durationMins: number;
+    coordinates: Array<{ lat: number; lng: number }>;
+    provider?: string;
+  }> {
+    return this.request('/locations/route', {
+      method: 'POST',
+      body: JSON.stringify({ pickupLat, pickupLng, destLat, destLng }),
+    });
+  }
+
+  async getSavedPlaces(): Promise<{ places: any[] }> {
+    return this.request('/locations/saved');
+  }
+
+  async savePlace(data: {
+    label: string;
+    address: string;
+    lat: number;
+    lng: number;
+  }): Promise<{ success: boolean; place: any }> {
+    return this.request('/locations/saved', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSavedPlace(id: string): Promise<{ success: boolean }> {
+    return this.request(`/locations/saved/${id}`, {
+      method: 'DELETE',
     });
   }
 }
