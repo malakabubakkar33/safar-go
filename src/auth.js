@@ -92,6 +92,15 @@ export function initAuth(onAuthSuccess) {
     if (activeView) {
       activeView.style.display = 'flex';
       hideAlert(activeView);
+
+      // Restore avatar preview when opening avatar step if already uploaded
+      if (activeView === viewSignupAvatar && avatarPreviewImg && avatarPlaceholder) {
+        if (signupState.avatarUrl && signupState.avatarUrl !== '/brand/safargo-symbol.svg') {
+          avatarPreviewImg.src = signupState.avatarUrl;
+          avatarPreviewImg.style.display = 'block';
+          avatarPlaceholder.style.display = 'none';
+        }
+      }
     }
   }
 
@@ -286,10 +295,7 @@ export function initAuth(onAuthSuccess) {
         // Transition to Step 2 (OTP)
         setupOtpView(data.cooldownSeconds || 60);
         switchView(viewSignupOtp);
-
-        if (data.devOtp) {
-          showAlert(viewSignupOtp, `Testing Verification Code: ${data.devOtp} (or 123456)`, true);
-        }
+        showAlert(viewSignupOtp, data.message || 'Verification code sent to your email address.', true);
 
       } catch (err) {
         showAlert(viewSignupStep1, err.message);
@@ -578,43 +584,65 @@ export function initAuth(onAuthSuccess) {
     btnTakePhoto.addEventListener('click', () => avatarCameraInput.click());
   }
 
-  function handleFileSelected(file) {
+  let isAvatarUploading = false;
+
+  async function handleFileSelected(file) {
     if (!file) return;
     hideAlert(viewSignupAvatar);
 
-    // Optimize image in browser via HTML5 Canvas (max 600x600, quality 0.85 JPEG)
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxDim = 600;
-        let width = img.width;
-        let height = img.height;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/jpg'].includes(file.type)) {
+      showAlert(viewSignupAvatar, 'Please select a JPEG, PNG, or WebP image file.');
+      return;
+    }
 
-        if (width > height && width > maxDim) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else if (height > maxDim) {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert(viewSignupAvatar, 'Image size exceeds 5MB limit. Please select a smaller photo.');
+      return;
+    }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+    isAvatarUploading = true;
+    avatarNextBtn.disabled = true;
+    avatarNextBtn.innerHTML = '<span>Uploading photo...</span>';
 
-        canvas.toBlob((blob) => {
-          signupState.avatarFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-          avatarPreviewImg.src = canvas.toDataURL('image/jpeg');
-          avatarPreviewImg.style.display = 'block';
-          avatarPlaceholder.style.display = 'none';
-        }, 'image/jpeg', 0.85);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    // Show immediate local preview
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      avatarPreviewImg.src = objectUrl;
+      avatarPreviewImg.style.display = 'block';
+      avatarPlaceholder.style.display = 'none';
+    } catch {}
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file, file.name || 'avatar.jpg');
+
+      const res = await fetch('/api/auth/upload-avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({ error: 'Upload failed' }));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload photo to storage.');
+      }
+
+      signupState.avatarUrl = data.avatarUrl;
+      saveSignupSession(signupState);
+      showAlert(viewSignupAvatar, 'Profile photo uploaded successfully!', true);
+
+      // Point image to persistent URL
+      if (data.avatarUrl) {
+        avatarPreviewImg.src = data.avatarUrl;
+      }
+    } catch (err) {
+      console.error('[Avatar Upload UI Error]:', err);
+      showAlert(viewSignupAvatar, err.message || 'Failed to upload photo. Tap photo to try another.');
+      signupState.avatarUrl = null;
+    } finally {
+      isAvatarUploading = false;
+      avatarNextBtn.disabled = false;
+      avatarNextBtn.innerHTML = '<span>Next</span>';
+    }
   }
 
   if (avatarFileInput) {
@@ -625,37 +653,12 @@ export function initAuth(onAuthSuccess) {
   }
 
   if (avatarNextBtn) {
-    avatarNextBtn.addEventListener('click', async () => {
-      hideAlert(viewSignupAvatar);
-
-      // If user selected an image, upload it
-      if (signupState.avatarFile) {
-        avatarNextBtn.disabled = true;
-        avatarNextBtn.innerHTML = '<span>Uploading photo...</span>';
-
-        try {
-          const formData = new FormData();
-          formData.append('avatar', signupState.avatarFile);
-
-          const res = await fetch('/api/auth/upload-avatar', {
-            method: 'POST',
-            body: formData,
-          });
-
-          const data = await res.json().catch(() => ({ error: 'Upload failed' }));
-          if (!res.ok) throw new Error(data.error || 'Failed to upload photo.');
-          signupState.avatarUrl = data.avatarUrl;
-          saveSignupSession(signupState);
-        } catch (err) {
-          showAlert(viewSignupAvatar, err.message);
-          avatarNextBtn.disabled = false;
-          avatarNextBtn.innerHTML = '<span>Next</span>';
-          return;
-        }
+    avatarNextBtn.addEventListener('click', () => {
+      if (isAvatarUploading) {
+        showAlert(viewSignupAvatar, 'Please wait while your photo finishes uploading...');
+        return;
       }
-
-      avatarNextBtn.disabled = false;
-      avatarNextBtn.innerHTML = '<span>Next</span>';
+      hideAlert(viewSignupAvatar);
       switchView(viewSignupPassword);
     });
   }

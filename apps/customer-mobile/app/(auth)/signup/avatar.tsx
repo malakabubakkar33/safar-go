@@ -112,8 +112,16 @@ export default function SignupAvatarScreen() {
   };
 
   const handleNext = () => {
-    if (selectedUri) {
-      setAvatar(selectedUri, uploadedUrl || selectedUri);
+    if (isUploading) {
+      Alert.alert('Upload in Progress', 'Please wait until your photo finishes uploading.');
+      return;
+    }
+    if (selectedUri && !uploadedUrl && !selectedUri.includes('safargo-symbol')) {
+      Alert.alert('Upload Incomplete', 'Your photo has not finished uploading. Please retry uploading or choose "Skip for now".');
+      return;
+    }
+    if (uploadedUrl) {
+      setAvatar(selectedUri || uploadedUrl, uploadedUrl);
     }
     router.push('/(auth)/signup/password');
   };

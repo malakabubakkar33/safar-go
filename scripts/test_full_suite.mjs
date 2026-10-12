@@ -123,6 +123,7 @@ async function runTests() {
     }
     assert(step1.status === 200, 'Signup step 1 handles valid inputs', JSON.stringify(step1.data));
     assert(Boolean(step1.data?.emailMasked), 'Email masked string returned securely');
+    assert(step1.data?.devOtp === undefined, 'devOtp is never returned in API responses (Zero Demo Bypass)');
 
     // -------------------------------------------------------------------------
     // 4. HARDENED OTP VERIFICATION (NO DEMO BYPASSES)

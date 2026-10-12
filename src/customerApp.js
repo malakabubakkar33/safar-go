@@ -128,6 +128,67 @@ function setupNavigationAndDrawer() {
     };
   }
 
+  // Profile photo replacement from drawer
+  const drawerAvatarEl = document.getElementById('cust-drawer-avatar');
+  if (drawerAvatarEl) {
+    drawerAvatarEl.style.cursor = 'pointer';
+    drawerAvatarEl.title = 'Click to change profile photo';
+
+    let drawerFileInput = document.getElementById('cust-drawer-file-input');
+    if (!drawerFileInput) {
+      drawerFileInput = document.createElement('input');
+      drawerFileInput.type = 'file';
+      drawerFileInput.id = 'cust-drawer-file-input';
+      drawerFileInput.accept = 'image/jpeg,image/png,image/webp';
+      drawerFileInput.style.display = 'none';
+      document.body.appendChild(drawerFileInput);
+    }
+
+    drawerAvatarEl.onclick = () => {
+      drawerFileInput.click();
+    };
+
+    drawerFileInput.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/jpg'].includes(file.type)) {
+        alert('Please choose a JPEG, PNG, or WebP image.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be under 5MB.');
+        return;
+      }
+
+      drawerAvatarEl.style.opacity = '0.5';
+      const fd = new FormData();
+      fd.append('avatar', file, file.name || 'avatar.jpg');
+
+      try {
+        const res = await fetch('/api/auth/profile/avatar', {
+          method: 'PUT',
+          headers: authHeaders(false),
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to update photo');
+        }
+
+        const currentUser = JSON.parse(localStorage.getItem('safargo_user') || '{}');
+        currentUser.avatarUrl = data.avatarUrl;
+        localStorage.setItem('safargo_user', JSON.stringify(currentUser));
+        updateCustomerHeader(currentUser);
+      } catch (err) {
+        alert(err.message || 'Failed to update profile photo.');
+      } finally {
+        drawerAvatarEl.style.opacity = '1';
+        drawerFileInput.value = '';
+      }
+    };
+  }
+
   // Switch to driver mode from drawer
   const btnDriverMode = document.getElementById('cust-menu-driver-mode');
   if (btnDriverMode) {

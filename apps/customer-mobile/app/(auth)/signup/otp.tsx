@@ -131,29 +131,6 @@ export default function SignupOtpScreen() {
             We've sent a 6-digit verification code to{' '}
             <Text style={styles.emailHighlight}>{signupFlow.emailMasked || signupFlow.email}</Text>
           </Text>
-          {signupFlow.devOtp ? (
-            <TouchableOpacity
-              onPress={() => {
-                const chars = signupFlow.devOtp!.split('');
-                setOtpDigits(chars);
-                verifyCode(signupFlow.devOtp!);
-              }}
-              style={{
-                marginTop: 8,
-                paddingVertical: 6,
-                paddingHorizontal: 12,
-                backgroundColor: '#DCFCE7',
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: '#86EFAC',
-                alignSelf: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 13, color: '#15803D', fontWeight: '600' }}>
-                🔑 Tap to autofill test code: {signupFlow.devOtp}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
         </View>
 
         {/* Error Banner */}

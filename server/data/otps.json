@@ -42,17 +42,5 @@
     "expiresAt": 1791646569047,
     "lastSentAt": 1791645969047,
     "updatedAt": 1791645969049
-  },
-  "malikabubakkar523@gmail.com": {
-    "fullName": "Malik Abubakkar",
-    "username": "malik_customer",
-    "phone": "+92974947996",
-    "otpHash": "34928fda612fbd5a2c6f375eb2db008ecb0df599d0bf7791dcaec507ab7edec9",
-    "attempts": 0,
-    "maxAttempts": 5,
-    "createdAt": 1791645969480,
-    "expiresAt": 1791646569480,
-    "lastSentAt": 1791645969480,
-    "updatedAt": 1791645969483
   }
 }

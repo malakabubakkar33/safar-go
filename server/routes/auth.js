@@ -166,19 +166,22 @@ router.post('/signup-step1', async (req, res) => {
     const otpCode = crypto.randomInt(100000, 1000000).toString();
     const otpHash = crypto.createHash('sha256').update(`${otpCode}:${cleanEmail}`).digest('hex');
 
-    // Send Email via Resend (with automatic development/sandbox fallback)
-    let emailResult = { success: true };
-    try {
-      emailResult = await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
-    } catch (mailErr) {
-      console.warn('[Signup Step 1 Email Delivery Notice]:', mailErr.message);
-      emailResult = { success: true, sandbox: true, notice: mailErr.message };
-    }
-
     // Invalidate any previously verified session for this email
     recentlyVerifiedTokens.delete(cleanEmail);
 
-    // Atomically Save Secure OTP Record
+    // Attempt real email OTP dispatch FIRST
+    try {
+      await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
+    } catch (mailErr) {
+      console.error('[Signup Step 1 Email Delivery Error]:', mailErr.message);
+      return res.status(502).json({
+        success: false,
+        code: 'EMAIL_DELIVERY_FAILED',
+        error: mailErr.message || 'Failed to dispatch verification email to your address. Please try again.',
+      });
+    }
+
+    // Atomically Save Secure OTP Record ONLY after provider accepts the email
     otpDB.set(cleanEmail, {
       fullName: fullName.trim(),
       username: cleanUser,
@@ -193,23 +196,16 @@ router.post('/signup-step1', async (req, res) => {
 
     return res.json({
       success: true,
-      message: emailResult.sandbox
-        ? `Verification code ready! (Testing code: ${otpCode})`
-        : 'Verification code sent to your email.',
+      message: 'Verification code sent to your email address.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
-      devOtp: otpCode,
     });
   } catch (err) {
     console.error('[Signup Step 1 Error]:', err);
-    let userMsg = err.message || 'Failed to dispatch verification email. Please try again.';
-    if (userMsg.includes('You can only send testing emails to your own email address')) {
-      userMsg = 'Resend Free Tier: Emails can only be delivered to your registered Resend email (malikabubakkar523@gmail.com). Please enter malikabubakkar523@gmail.com or verify a domain on resend.com.';
-    }
     return res.status(500).json({
       success: false,
       code: 'DISPATCH_ERROR',
-      error: userMsg,
+      error: err.message || 'Failed to dispatch verification email. Please try again.',
     });
   }
 });
@@ -254,13 +250,16 @@ router.post('/resend-otp', async (req, res) => {
     const newOtpCode = crypto.randomInt(100000, 1000000).toString();
     const newOtpHash = crypto.createHash('sha256').update(`${newOtpCode}:${cleanEmail}`).digest('hex');
 
-    // Send New Email via Resend
-    let emailResult = { success: true };
+    // Attempt real email dispatch of the new code FIRST
     try {
-      emailResult = await sendOtpEmail(cleanEmail, newOtpCode, existing.fullName);
+      await sendOtpEmail(cleanEmail, newOtpCode, existing.fullName);
     } catch (mailErr) {
-      console.warn('[Resend OTP Email Delivery Notice]:', mailErr.message);
-      emailResult = { success: true, sandbox: true, notice: mailErr.message };
+      console.error('[Resend OTP Email Delivery Error]:', mailErr.message);
+      return res.status(502).json({
+        success: false,
+        code: 'EMAIL_DELIVERY_FAILED',
+        error: mailErr.message || 'Failed to dispatch new verification code. Please try again.',
+      });
     }
 
     // Invalidate any previously verified session for this email
@@ -276,23 +275,16 @@ router.post('/resend-otp', async (req, res) => {
 
     return res.json({
       success: true,
-      message: emailResult.sandbox
-        ? `A new verification code is ready! (Testing code: ${newOtpCode})`
-        : 'A new verification code has been sent to your email.',
+      message: 'A new verification code has been sent to your email address.',
       emailMasked: maskEmail(cleanEmail),
       cooldownSeconds: 60,
-      devOtp: newOtpCode,
     });
   } catch (err) {
     console.error('[Resend OTP Error]:', err);
-    let userMsg = err.message || 'Failed to resend verification code.';
-    if (userMsg.includes('You can only send testing emails to your own email address')) {
-      userMsg = 'Resend Free Tier: Emails can only be delivered to your registered Resend email (malikabubakkar523@gmail.com). Please enter malikabubakkar523@gmail.com or verify a domain on resend.com.';
-    }
     return res.status(500).json({
       success: false,
       code: 'RESEND_ERROR',
-      error: userMsg,
+      error: err.message || 'Failed to resend verification code.',
     });
   }
 });
@@ -427,9 +419,23 @@ router.post('/verify-otp', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// PROFILE IMAGE UPLOAD
 // -------------------------------------------------------------
-router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
+// PROFILE IMAGE UPLOAD (SIGNUP FLOW)
+// -------------------------------------------------------------
+router.post('/upload-avatar', (req, res, next) => {
+  upload.single('avatar')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ success: false, error: 'Image size exceeds 5MB limit. Please choose a smaller photo.' });
+        }
+        return res.status(400).json({ success: false, error: `Upload error: ${err.message}` });
+      }
+      return res.status(400).json({ success: false, error: err.message || 'Invalid image file.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No image file uploaded.' });
@@ -466,7 +472,20 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 // -------------------------------------------------------------
 // UPDATE PROFILE AVATAR (AUTHENTICATED USER)
 // -------------------------------------------------------------
-router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
+router.put('/profile/avatar', (req, res, next) => {
+  upload.single('avatar')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ success: false, error: 'Image size exceeds 5MB limit. Please choose a smaller photo.' });
+        }
+        return res.status(400).json({ success: false, error: `Upload error: ${err.message}` });
+      }
+      return res.status(400).json({ success: false, error: err.message || 'Invalid image file.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -705,10 +724,13 @@ router.post('/forgot-password', async (req, res) => {
     try {
       await sendOtpEmail(cleanEmail, rawOtp, user.fullName || user.username);
     } catch (mailErr) {
-      console.warn('[Forgot Password Email Warning]:', mailErr.message);
-      console.log(`\n========================================`);
-      console.log(`[SAFARGO FORGOT PASSWORD OTP]: ${rawOtp} for ${cleanEmail}`);
-      console.log(`========================================\n`);
+      console.error('[Forgot Password Email Error]:', mailErr.message);
+      otpDB.remove(cleanEmail);
+      return res.status(502).json({
+        success: false,
+        code: 'EMAIL_DELIVERY_FAILED',
+        error: mailErr.message || 'Failed to send reset code to your email address.',
+      });
     }
 
     const [userPart, domainPart] = cleanEmail.split('@');

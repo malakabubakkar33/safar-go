@@ -57,7 +57,6 @@ export default function SignupStep1Screen() {
         username: cleanData.username,
         emailMasked: response.emailMasked,
         cooldownSeconds: response.cooldownSeconds || 60,
-        devOtp: response.devOtp,
       });
       router.push('/(auth)/signup/otp');
     } catch (err: any) {
