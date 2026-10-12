@@ -34,7 +34,8 @@ interface AuthStoreState {
     phone: string;
     username: string;
     emailMasked: string;
-    cooldownSeconds: number;
+    cooldownSeconds?: number;
+    verificationToken?: string | null;
     devOtp?: string;
   }) => void;
   setVerificationToken: (token: string) => void;

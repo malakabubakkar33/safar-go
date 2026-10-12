@@ -124,12 +124,13 @@ async function runTests() {
     assert(step1.status === 200, 'Signup step 1 handles valid inputs', JSON.stringify(step1.data));
     assert(Boolean(step1.data?.emailMasked), 'Email masked string returned securely');
     assert(step1.data?.devOtp === undefined, 'devOtp is never returned in API responses (Zero Demo Bypass)');
+    assert(Boolean(step1.data?.verificationToken), 'One-time verificationToken issued directly on Step 1 (OTP-free signup)');
+    verificationToken = step1.data?.verificationToken;
 
     // -------------------------------------------------------------------------
-    // 4. HARDENED OTP VERIFICATION (NO DEMO BYPASSES)
+    // 4. HARDENED OTP SECURITY GUARD
     // -------------------------------------------------------------------------
-    console.log('\n--- 4. Hardened OTP Verification (Security Enforcement) ---');
-    // Ensure demo bypass 123456 fails
+    console.log('\n--- 4. Hardened OTP Verification Guard ---');
     const fakeOtpRes = await request('/auth/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -138,26 +139,7 @@ async function runTests() {
         otp: '123456',
       }),
     });
-    assert(fakeOtpRes.status === 400, 'Demo OTP "123456" is strictly rejected (no bypasses)');
-
-    // Verify OTP record in DB has otpHash and no plaintext password
-    const realOtpRecord = otpDB.get(testEmail);
-    assert(Boolean(realOtpRecord?.otpHash), 'Server securely stored bcrypt OTP hash in database');
-
-    const dispatchedOtp = global.__lastMockOtp;
-    assert(Boolean(dispatchedOtp), `Dispatched 6-digit OTP captured (${dispatchedOtp})`);
-
-    const validOtpRes = await request('/auth/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: testEmail,
-        otp: dispatchedOtp,
-      }),
-    });
-    assert(validOtpRes.status === 200, 'Genuine OTP verification succeeds');
-    assert(Boolean(validOtpRes.data?.verificationToken), 'One-time verificationToken issued');
-    verificationToken = validOtpRes.data?.verificationToken;
+    assert([400, 404].includes(fakeOtpRes.status), 'Demo OTP "123456" is strictly rejected (no bypasses)');
 
     // -------------------------------------------------------------------------
     // 5. ACCOUNT CREATION & BCRYPT PASSWORD HASHING

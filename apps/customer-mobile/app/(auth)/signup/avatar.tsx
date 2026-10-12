@@ -135,7 +135,7 @@ export default function SignupAvatarScreen() {
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <View style={styles.stepBadge}>
-            <Text style={styles.stepBadgeText}>Step 3 of 4</Text>
+            <Text style={styles.stepBadgeText}>Step 2 of 3</Text>
           </View>
         </View>
 

@@ -86,7 +86,7 @@ export default function SignupPasswordScreen() {
               <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
             <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>Step 4 of 4</Text>
+              <Text style={styles.stepBadgeText}>Step 3 of 3</Text>
             </View>
           </View>
 

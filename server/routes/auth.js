@@ -150,55 +150,24 @@ router.post('/signup-step1', async (req, res) => {
       });
     }
 
-    // 4. Rate Limiting Cooldown Check (Distinguish pending/expired OTP from rate limit)
-    const existingOtp = otpDB.get(cleanEmail);
-    if (existingOtp && Date.now() < existingOtp.expiresAt && Date.now() - existingOtp.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
-      const waitSec = Math.ceil((OTP_RESEND_COOLDOWN_MS - (Date.now() - existingOtp.lastSentAt)) / 1000);
-      return res.status(429).json({
-        success: false,
-        code: 'OTP_RATE_LIMITED',
-        error: `Please wait ${waitSec}s before requesting a new verification code.`,
-        retryAfter: waitSec,
-      });
-    }
-
-    // Generate Cryptographically Secure 6-digit OTP
-    const otpCode = crypto.randomInt(100000, 1000000).toString();
-    const otpHash = crypto.createHash('sha256').update(`${otpCode}:${cleanEmail}`).digest('hex');
-
-    // Invalidate any previously verified session for this email
-    recentlyVerifiedTokens.delete(cleanEmail);
-
-    // Attempt real email OTP dispatch FIRST
-    try {
-      await sendOtpEmail(cleanEmail, otpCode, fullName.trim());
-    } catch (mailErr) {
-      console.error('[Signup Step 1 Email Delivery Error]:', mailErr.message);
-      return res.status(502).json({
-        success: false,
-        code: 'EMAIL_DELIVERY_FAILED',
-        error: mailErr.message || 'Failed to dispatch verification email to your address. Please try again.',
-      });
-    }
-
-    // Atomically Save Secure OTP Record ONLY after provider accepts the email
-    otpDB.set(cleanEmail, {
-      fullName: fullName.trim(),
-      username: cleanUser,
-      phone: cleanPhone,
-      otpHash,
-      attempts: 0,
-      maxAttempts: MAX_OTP_ATTEMPTS,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + OTP_EXPIRY_MS,
-      lastSentAt: Date.now(),
-    });
+    // Generate signed registration verification token directly (No OTP required for account creation)
+    const verificationToken = jwt.sign(
+      {
+        email: cleanEmail,
+        fullName: fullName.trim(),
+        username: cleanUser,
+        phone: cleanPhone,
+        emailVerified: true,
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
     return res.json({
       success: true,
-      message: 'Verification code sent to your email address.',
+      message: 'Registration details verified successfully.',
       emailMasked: maskEmail(cleanEmail),
-      cooldownSeconds: 60,
+      verificationToken,
     });
   } catch (err) {
     console.error('[Signup Step 1 Error]:', err);

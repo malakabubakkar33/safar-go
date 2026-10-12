@@ -56,9 +56,9 @@ export default function SignupStep1Screen() {
         phone: cleanData.phone,
         username: cleanData.username,
         emailMasked: response.emailMasked,
-        cooldownSeconds: response.cooldownSeconds || 60,
+        verificationToken: response.verificationToken || null,
       });
-      router.push('/(auth)/signup/otp');
+      router.push('/(auth)/signup/avatar');
     } catch (err: any) {
       setApiError(err.message || 'Failed to submit registration information.');
     } finally {
@@ -79,7 +79,7 @@ export default function SignupStep1Screen() {
               <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
             <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>Step 1 of 4</Text>
+              <Text style={styles.stepBadgeText}>Step 1 of 3</Text>
             </View>
           </View>
 

@@ -265,7 +265,7 @@ export function initAuth(onAuthSuccess) {
       }
 
       step1NextBtn.disabled = true;
-      step1NextBtn.innerHTML = '<span>Sending verification code...</span>';
+      step1NextBtn.innerHTML = '<span>Processing...</span>';
 
       try {
         const res = await fetch('/api/auth/signup-step1', {
@@ -290,12 +290,11 @@ export function initAuth(onAuthSuccess) {
         signupState.phone = phone;
         signupState.username = username;
         signupState.emailMasked = data.emailMasked || email;
+        signupState.verificationToken = data.verificationToken;
         saveSignupSession(signupState);
 
-        // Transition to Step 2 (OTP)
-        setupOtpView(data.cooldownSeconds || 60);
-        switchView(viewSignupOtp);
-        showAlert(viewSignupOtp, data.message || 'Verification code sent to your email address.', true);
+        // Transition directly to Step 2 (Profile Photo) - OTP removed from signup
+        switchView(viewSignupAvatar);
 
       } catch (err) {
         showAlert(viewSignupStep1, err.message);
@@ -573,7 +572,7 @@ export function initAuth(onAuthSuccess) {
   const backToOtpBtn = document.getElementById('back-to-otp-btn');
 
   if (backToOtpBtn) {
-    backToOtpBtn.addEventListener('click', () => switchView(viewSignupOtp));
+    backToOtpBtn.addEventListener('click', () => switchView(viewSignupStep1));
   }
 
   if (btnChooseGallery && avatarFileInput) {

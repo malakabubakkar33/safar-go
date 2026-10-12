@@ -36,7 +36,8 @@ export interface SignupStep1Response {
   success: boolean;
   message: string;
   emailMasked: string;
-  cooldownSeconds: number;
+  cooldownSeconds?: number;
+  verificationToken?: string;
   devOtp?: string;
 }
 
